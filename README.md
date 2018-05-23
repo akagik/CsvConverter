@@ -28,3 +28,45 @@ git@github.com:akagik/Generic.git
 Table は複数の ScriptableObject Data をまとめた ScriptableObject を継承したクラス.
 クラス名は Class Name + "Table" になる.
 設定で有効な Key をセットしておくと, 自動的に Find メソッドを実装してくれる.
+
+### 例) Human class
+```csharp
+using UnityEngine;
+using System.Collections.Generic;
+
+public class Human : ScriptableObject
+{
+    public int id;
+    public string name;
+    public Sprite icon;
+    public int hp;
+    public float spd;
+    public bool isEnemy;
+    public int[] scores;
+    public HumanType humanType;
+    public string[] names;
+}
+```
+
+Table クラスは以下のようになる.
+```csharp
+using UnityEngine;
+using System.Collections.Generic;
+
+public class HumanTable : ScriptableObject
+{
+    public List<Human> rows = new List<Human>();
+
+    public Human Find(int key)
+    {
+        foreach (Human o in rows)
+        {
+            if (o.id == key)
+            {
+                return o;
+            }
+        }
+        return null;
+    }
+}
+```
