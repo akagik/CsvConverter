@@ -20,6 +20,7 @@ Generic の CsvParser が必要:
 | File Path | csv までのファイルパス(Assets は除く)  |
 | Class Name | Scripable Object のクラス名 |
 | Destination | 生成した ScriptableObject を配置するディレクトリへのパス |
+| Is Enum | enum かどうか. True の場合は Class Generate と Table Generate は無視される. |
 | Class Generate | クラスを生成するかどうか. |
 | Table Generate | テーブルクラスとScriptableObjectを生成するかどうか. |
 | Key | ScriptableObject の名前をつけるときに利用する一意な値を持つフィールド名 |
