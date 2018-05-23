@@ -37,27 +37,38 @@ namespace CsvConverter
                 CsvData csv = new CsvData();
                 csv.SetFromList(cell);
 
-                CsvData headers = csv.Slice(0, 2);
-                CsvData contents = csv.Slice(2);
 
-                Field[] fields = GetFieldsFromHeader(headers);
-
-                if (s.classGenerate)
+                if (s.isEnum)
                 {
-                    ClassGenerator.GenerateClass(s.destination, s.className, fields);
+                    CsvData headers = csv.Slice(0, 1);
+                    CsvData contents = csv.Slice(1);
+                    EnumGenerator.Generate(s.destination, s.className, headers, contents);
                 }
-
-                if (s.tableGenerate)
+                else
                 {
-                    int keyIndex = ClassGenerator.FindKeyIndex(s, fields);
+                    CsvData headers = csv.Slice(0, 2);
+                    CsvData contents = csv.Slice(2);
 
-                    Field key = null;
-                    if (keyIndex != -1)
+                    Field[] fields = GetFieldsFromHeader(headers);
+
+                    if (s.classGenerate)
                     {
-                        key = fields[keyIndex];
+                        ClassGenerator.GenerateClass(s.destination, s.className, fields);
                     }
-                    ClassGenerator.GenerateTableClass(s, s.className + "Table", key);
+
+                    if (s.tableGenerate)
+                    {
+                        int keyIndex = ClassGenerator.FindKeyIndex(s, fields);
+
+                        Field key = null;
+                        if (keyIndex != -1)
+                        {
+                            key = fields[keyIndex];
+                        }
+                        ClassGenerator.GenerateTableClass(s, s.className + "Table", key);
+                    }
                 }
+
                 i++;
                 show_progress(s.className, (float)i / settings[0].list.Length, i, settings[0].list.Length);
             }
@@ -82,6 +93,11 @@ namespace CsvConverter
                 if (textAsset == null)
                 {
                     Debug.LogError("Not found : " + s.filePath);
+                    continue;
+                }
+
+                if (s.isEnum)
+                {
                     continue;
                 }
 

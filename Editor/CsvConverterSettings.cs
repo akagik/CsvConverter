@@ -40,6 +40,7 @@ namespace CsvConverter
             public string filePath;
             public string className;
             public string destination;
+            public bool isEnum;
             public bool classGenerate;
             public bool tableGenerate;
             public string key; // ScriptableObject の名前に使用.

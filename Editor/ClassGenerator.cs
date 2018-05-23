@@ -122,7 +122,7 @@ namespace CsvConverter
 
                 if (info == null)
                 {
-                    Debug.LogWarningFormat("class \"{0}\" に存在しないフィールド \"{1}\" を無視", setting.className, fields[j].fieldName);
+                    Debug.LogWarningFormat("{0} に存在しないフィールド \"{1}\" を無視", setting.className, fields[j].fieldName);
                     fields[j].isValid = false;
                 }
             }
@@ -176,7 +176,7 @@ namespace CsvConverter
 
                     if (key == "")
                     {
-                        Debug.LogWarningFormat("{0}: key が存在しない行をスキップしました", line);
+                        Debug.LogWarningFormat("{0} line {1}: key が存在しない行をスキップしました", setting.className, line);
                         continue;
                     }
                     fileName = setting.className + "_" + content.Get(i, keyIndex) + ".asset";
@@ -207,7 +207,7 @@ namespace CsvConverter
 
                     if (sValue == "")
                     {
-                        Debug.LogWarningFormat("{0}行{1}列目: 空の値があります: {2}=\"{3}\"", line, j + 1, info.Name, sValue);
+                        Debug.LogWarningFormat("{0} {1}行{2}列目: 空の値があります: {3}=\"{4}\"", setting.className, line, j + 1, info.Name, sValue);
                     }
                     else
                     {
@@ -215,7 +215,7 @@ namespace CsvConverter
 
                         if (value == null)
                         {
-                            Debug.LogWarningFormat("{0}行{1}列目: 変換に失敗しました: {2}=\"{3}\"", line, j + 1, info.Name, sValue);
+                            Debug.LogWarningFormat("{0} {1}行{2}列目: 変換に失敗しました: {3}=\"{4}\"", setting.className, line, j + 1, info.Name, sValue);
                         }
                     }
 
