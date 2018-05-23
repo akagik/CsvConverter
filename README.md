@@ -23,3 +23,8 @@ git@github.com:akagik/Generic.git
 | Class Generate | クラスを生成するかどうか. |
 | Table Generate | テーブルクラスとScriptableObjectを生成するかどうか. |
 | Key | ScriptableObject の名前をつけるときに利用する一意な値を持つフィールド名 |
+
+## Table Generation
+Table は複数の ScriptableObject Data をまとめた ScriptableObject を継承したクラス.
+クラス名は Class Name + "Table" になる.
+設定で有効な Key をセットしておくと, 自動的に Find メソッドを実装してくれる.
