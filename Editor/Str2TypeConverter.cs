@@ -55,12 +55,25 @@ public static class Str2TypeConverter
             }
             string path = Path.Combine("Assets", sValue);
             Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
-            value = sprite;
 
+            // フルパスで見つからない場合はファイル名＋Spriteフィルターで最初に見つかったものを返す.
             if (sprite == null)
             {
-                Debug.LogErrorFormat("Not found sprite: \"{0}\"", path);
+                string[] guids = AssetDatabase.FindAssets(GetPathWithoutExtension(sValue) + " t:Sprite");
+
+                if (guids.Length == 0)
+                {
+                    Debug.LogErrorFormat("Not found sprite: \"{0}\"", sValue);
+                }
+                if (guids.Length > 1)
+                {
+                    Debug.LogWarningFormat("Sprite \"{0}\" に対して複数のアセットが見つかりました:\n{1}", sValue, string.Join("\n", guids));
+                }
+
+                path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
             }
+            value = sprite;
         }
         else if (t == typeof(string))
         {
@@ -175,5 +188,18 @@ public static class Str2TypeConverter
         }
 
         return value;
+    }
+
+    /// <summary>
+    /// 指定されたパス文字列から拡張子を削除して返します
+    /// </summary>
+    public static string GetPathWithoutExtension(string path)
+    {
+        var extension = Path.GetExtension(path);
+        if (string.IsNullOrEmpty(extension))
+        {
+            return path;
+        }
+        return path.Replace(extension, string.Empty);
     }
 }
