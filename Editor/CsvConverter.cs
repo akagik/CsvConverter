@@ -52,7 +52,8 @@ namespace CsvConverter
                     int keyIndex = ClassGenerator.FindKeyIndex(s, fields);
 
                     Field key = null;
-                    if (keyIndex != -1) {
+                    if (keyIndex != -1)
+                    {
                         key = fields[keyIndex];
                     }
                     ClassGenerator.GenerateTableClass(s, s.className + "Table", key);

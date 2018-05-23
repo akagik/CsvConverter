@@ -86,7 +86,8 @@ namespace CsvConverter
             AssetDatabase.Refresh();
         }
 
-        public static int FindKeyIndex(CsvConverterSettings.Setting setting, Field[] fields) {
+        public static int FindKeyIndex(CsvConverterSettings.Setting setting, Field[] fields)
+        {
             if (setting.key != "")
             {
                 for (int i = 0; i < fields.Length; i++)
@@ -163,6 +164,11 @@ namespace CsvConverter
             for (int i = 0; i < content.row; i++)
             {
                 int line = i + 2 + 1;
+
+#if VERBOSE
+                Debug.Log("line:" + line);
+#endif
+
                 string fileName = setting.className + i + ".asset";
                 if (keyIndex != -1)
                 {
@@ -194,13 +200,18 @@ namespace CsvConverter
                     string sValue = content.Get(i, j);
                     object value = null;
 
-                    if (sValue == "" && info.FieldType != typeof(string))
+                    // 文字列型のときは " でラップする.
+                    if (info.FieldType ==  typeof (string)) {
+                        sValue = "\"" + sValue + "\"";
+                    }
+
+                    if (sValue == "")
                     {
                         Debug.LogWarningFormat("{0}行{1}列目: 空の値があります: {2}=\"{3}\"", line, j + 1, info.Name, sValue);
                     }
                     else
                     {
-                        value = Convert(info, sValue);
+                        value = Str2TypeConverter.Convert(info.FieldType, sValue);
 
                         if (value == null)
                         {
@@ -239,65 +250,6 @@ namespace CsvConverter
             }
 
             return null;
-        }
-
-        public static object Convert(FieldInfo info, string sValue)
-        {
-            object value = null;
-
-            // 型に応じて string を変換する.
-            if (info.FieldType == typeof(int))
-            {
-                int intValue;
-                if (int.TryParse(sValue, out intValue))
-                {
-                    value = intValue;
-                }
-            }
-            else if (info.FieldType == typeof(float))
-            {
-                float floatValue;
-                if (float.TryParse(sValue, out floatValue))
-                {
-                    value = floatValue;
-                }
-            }
-            else if (info.FieldType == typeof(bool))
-            {
-                bool cValue;
-                if (bool.TryParse(sValue, out cValue))
-                {
-                    value = cValue;
-                }
-            }
-            else if (info.FieldType == typeof(UnityEngine.Sprite))
-            {
-                if (sValue == "")
-                {
-                    return value;
-                }
-                string path = Path.Combine("Assets", sValue);
-                Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
-                value = sprite;
-
-                if (sprite == null)
-                {
-                    Debug.LogErrorFormat("Not found sprite: \"{0}\"", path);
-                }
-            }
-            else if (info.FieldType == typeof(string))
-            {
-                value = sValue;
-            }
-            // ユーザー定義型の enum
-            else
-            {
-                Type fieldType = info.FieldType;
-
-                value = Enum.Parse(fieldType, sValue);
-            }
-
-            return value;
         }
 
         private static void show_progress(string name, float progress, int i, int total)
