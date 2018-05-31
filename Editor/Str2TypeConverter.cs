@@ -38,8 +38,17 @@ public static class Str2TypeConverter
             {
                 value = floatValue;
             }
-        }
-        else if (t == typeof(bool))
+        } else if (t == typeof(double)) {
+            double doubleValue;
+            if (double.TryParse(sValue, out doubleValue)) {
+                value = doubleValue;
+            }
+        } else if (t == typeof(long)) {
+            long longValue;
+            if (long.TryParse(sValue, out longValue)) {
+                value = longValue;
+            }
+        } else if (t == typeof(bool))
         {
             bool cValue;
             if (bool.TryParse(sValue, out cValue))
