@@ -147,14 +147,20 @@ namespace CsvConverter
 
                 dataListField = tableType.GetField(ROWS);
 
-                table = ScriptableObject.CreateInstance(tableType);
                 string filePath = Path.Combine(folder, tableClassName + ".asset");
-                AssetDatabase.CreateAsset(table, filePath);
+
+                table = AssetDatabase.LoadAssetAtPath<ScriptableObject>(filePath);
+                if (table == null)
+                {
+                    table = ScriptableObject.CreateInstance(tableType);
+                    AssetDatabase.CreateAsset(table, filePath);
+                }
+
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
 
                 dataList = dataListField.GetValue(table);
-                //dataList.GetType().GetMethod("Clear").Invoke(dataList, null);
+                dataList.GetType().GetMethod("Clear").Invoke(dataList, null);
             }
 
 
@@ -201,7 +207,8 @@ namespace CsvConverter
                     object value = null;
 
                     // 文字列型のときは " でラップする.
-                    if (info.FieldType ==  typeof (string)) {
+                    if (info.FieldType == typeof(string))
+                    {
                         sValue = "\"" + sValue + "\"";
                     }
 
