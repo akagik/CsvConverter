@@ -68,7 +68,7 @@ public static class Str2TypeConverter
             // フルパスで見つからない場合はファイル名＋Spriteフィルターで最初に見つかったものを返す.
             if (sprite == null)
             {
-                string[] guids = AssetDatabase.FindAssets(GetPathWithoutExtension(sValue) + " t:Sprite");
+                string[] guids = AssetDatabase.FindAssets("\"" + GetPathWithoutExtension(sValue) + "\" t:Sprite");
 
                 if (guids.Length == 0)
                 {
