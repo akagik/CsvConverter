@@ -232,6 +232,10 @@ namespace CsvConverter
                 show_progress(setting.className, (float)i / content.row, i, content.row);
             }
 
+            if (setting.tableGenerate)
+            {
+                EditorUtility.SetDirty(table);
+            }
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
