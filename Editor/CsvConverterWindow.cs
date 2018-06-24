@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEditor;
 
 namespace CsvConverter {
@@ -70,21 +71,32 @@ namespace CsvConverter {
 
         public static void GenerateAllCode(CsvConverterSettings setting) {
             int i = 0;
-            foreach (CsvConverterSettings.Setting s in setting.list) {
-                show_progress(s.className, (float)i / setting.list.Length, i, setting.list.Length);
-                CsvConverter.GenerateCode(s);
-                i++;
-                show_progress(s.className, (float)i / setting.list.Length, i, setting.list.Length);
+
+            try {
+                foreach (CsvConverterSettings.Setting s in setting.list) {
+                    show_progress(s.className, (float)i / setting.list.Length, i, setting.list.Length);
+                    CsvConverter.GenerateCode(s);
+                    i++;
+                    show_progress(s.className, (float)i / setting.list.Length, i, setting.list.Length);
+                }
             }
+            catch (Exception e) {
+                Debug.LogException(e);
+            }
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-
             EditorUtility.ClearProgressBar();
         }
 
         public static void CreateAllAssets(CsvConverterSettings setting) {
-            foreach (CsvConverterSettings.Setting s in setting.list) {
-                CsvConverter.CreateAssets(s);
+            try {
+                foreach (CsvConverterSettings.Setting s in setting.list) {
+                    CsvConverter.CreateAssets(s);
+                }
+            }
+            catch (Exception e) {
+                Debug.LogException(e);
             }
 
             AssetDatabase.SaveAssets();
@@ -94,7 +106,14 @@ namespace CsvConverter {
 
         public static void GenerateOneCode(CsvConverterSettings.Setting s) {
             show_progress(s.className, 0, 0, 1);
-            CsvConverter.GenerateCode(s);
+
+            try {
+                CsvConverter.GenerateCode(s);
+            }
+            catch (Exception e) {
+                Debug.LogException(e);
+            }
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             show_progress(s.className, 1, 1, 1);
@@ -103,7 +122,12 @@ namespace CsvConverter {
         }
 
         public static void CreateOneAssets(CsvConverterSettings.Setting s) {
-            CsvConverter.CreateAssets(s);
+            try {
+                CsvConverter.CreateAssets(s);
+            }
+            catch (Exception e) {
+                Debug.LogException(e);
+            }
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
