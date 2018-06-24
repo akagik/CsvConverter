@@ -10,14 +10,31 @@ Generic の CsvParser が必要:
 
 1. Project View で右クリックし Create/CsvConverterSettings を選択する.
 2. 作成された設定ファイルに csv の File Path や 生成先フォルダ destination など各種変数を埋める.
-3. Tools/CsvConvert/Generate Code を実行してクラス（テーブルクラス）を生成する.
-4. Tools/CsvConvert/Create Assets を実行して csv ファイルパスから ScriptableObject を生成する.
+3. Window/CsvConverter でウィンドウを開く.
+3. Generate Code ボタンを押してクラス（テーブルクラス）を生成する.
+4. Create Assets を実行して ScriptableObject を生成する.
+
+## 対応している型
+| 型 | 例 | 備考 |
+| --- | ------------- | ----------- |
+| int | 21 | |
+| string | "hello world" | 実際の csv にはダブルクォーテーションを入力する必要はない. |
+| float | 1.3 | |
+| double | 2.5 | |
+| long | 9032 | |
+| bool | true | |
+| Sprite | "test.png" | (Assets からの)フルパスで見つからない場合はファイル名で検索する. |
+| Vector2 | (4.5, 9.1) | |
+| Vector3 | (1.0, 2.2, 3.4) | |
+| ユーザー定義Enum | 変数名 (Red など文字列を入力する) | 整数値は無効. |
+| 上記型の配列 | ["abc", "def"] | 空の場合は空配列になる. |
+
 
 ## 各種設定項目
 
 | 項目 | 説明 |
 | ------------- | ------------- |
-| File Path | csv までのファイルパス(Assets は除く)  |
+| Csv File Path | csv までのファイルパス(Assets は除く)  |
 | Class Name | Scripable Object のクラス名 |
 | Destination | 生成した ScriptableObject を配置するディレクトリへのパス |
 | Is Enum | enum かどうか. True の場合は Class Generate と Table Generate は無視される. |
