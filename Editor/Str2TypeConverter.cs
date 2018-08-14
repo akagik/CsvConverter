@@ -158,7 +158,7 @@ public static class Str2TypeConverter
             // TODO List<object> だと Cast Error が発生する...
             //List<int> objects = new List<int>();
 
-            Debug.Log("t.GetElementType() = " + t.GetElementType());
+            //Debug.Log("t.GetElementType() = " + t.GetElementType());
             Type listType = typeof(List<>);
             var constructedListType = listType.MakeGenericType(t.GetElementType());
 
