@@ -3,29 +3,27 @@ using System.IO;
 using UnityEngine;
 using UnityEditor;
 
-namespace CsvConverter
-{
-	public class CsvConverterSettings : ScriptableObject
-    {
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
+namespace CsvConverter {
+    public class CsvConverterSettings : ScriptableObject {
         public Setting[] list;
 
         [MenuItem("Assets/Create/CsvConverterSettings")]
-        public static void Create()
-        {
+        public static void Create() {
             CsvConverterSettings o = ScriptableObject.CreateInstance<CsvConverterSettings>();
             create<CsvConverterSettings>(o);
         }
 
-        private static void create<T>(T t) where T : UnityEngine.Object
-        {
+        private static void create<T>(T t) where T : UnityEngine.Object {
             string path = AssetDatabase.GetAssetPath(Selection.activeObject);
 
-            if (path == "")
-            {
+            if (path == "") {
                 path = "Assets";
             }
-            else if (Path.GetExtension(path) != "")
-            {
+            else if (Path.GetExtension(path) != "") {
                 path = path.Replace(Path.GetFileName(path), "");
             }
 
@@ -35,10 +33,16 @@ namespace CsvConverter
         }
 
         [Serializable]
-        public class Setting
-        {
+        public class Setting {
+#if ODIN_INSPECTOR
+            [FilePath(ParentFolder = "Assets", RequireExistingPath = true)]
+#endif
             public string csvFilePath;
             public string className;
+
+#if ODIN_INSPECTOR
+            [FolderPath(ParentFolder = "Assets", RequireExistingPath = true)]
+#endif
             public string destination;
             public bool isEnum;
             public bool classGenerate;
