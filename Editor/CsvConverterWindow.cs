@@ -44,6 +44,7 @@ namespace CsvConverter {
                 }
 
                 GUI.enabled = s.canCreateAsset;
+
                 if (GUILayout.Button("Create Assets", GUILayout.Width(110)) && !isDownloading) {
                     isDownloading = true;
                     CreateOneAssets(s);

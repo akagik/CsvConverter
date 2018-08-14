@@ -34,6 +34,12 @@ namespace CsvConverter {
             AssetDatabase.Refresh();
         }
 
+        public void OnValidate() {
+            for (int i = 0; i < list.Length; i++) {
+                list[i].CalculateCanCreateAsset();
+            }
+        }
+
         [Serializable]
         public class Setting {
 #if ODIN_INSPECTOR
@@ -83,17 +89,22 @@ namespace CsvConverter {
             }
 
             // asset を生成できるかどうか?
-            public bool canCreateAsset {
-                get {
-                    // enum の場合は Asset を生成できない
-                    if (isEnum) return false;
+            public bool canCreateAsset { get; private set; }
 
-                    // クラスが生成されていない場合も Asset を生成できない
-                    Type assetType = ClassGenerator.GetTypeByName(className);
-                    if (assetType == null) {
-                        return false;
-                    }
-                    return true;
+            public void CalculateCanCreateAsset() {
+                // enum の場合は Asset を生成できない
+                if (isEnum) {
+                    canCreateAsset = false;
+                    return;
+                }
+
+                // クラスが生成されていない場合も Asset を生成できない
+                Type assetType = ClassGenerator.GetTypeByName(className);
+                if (assetType == null) {
+                    canCreateAsset = false;
+                }
+                else {
+                    canCreateAsset = true;
                 }
             }
         }
