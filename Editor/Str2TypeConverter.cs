@@ -79,8 +79,13 @@ public static class Str2TypeConverter
                     Debug.LogWarningFormat("Sprite \"{0}\" に対して複数のアセットが見つかりました:\n{1}", sValue, string.Join("\n", guids));
                 }
 
-                path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+                if (guids.Length > 0) {
+                    path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                    sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+                }
+                else {
+                    sprite = null;
+                }
             }
             value = sprite;
         }
