@@ -39,6 +39,8 @@ namespace CsvConverter {
                     isDownloading = true;
                     GenerateOneCode(s);
                     isDownloading = false;
+
+                    GUIUtility.ExitGUI();
                 }
 
                 GUI.enabled = s.canCreateAsset;
@@ -46,6 +48,8 @@ namespace CsvConverter {
                     isDownloading = true;
                     CreateOneAssets(s);
                     isDownloading = false;
+
+                    GUIUtility.ExitGUI();
                 }
 
                 GUI.enabled = true;
@@ -57,11 +61,15 @@ namespace CsvConverter {
                 isDownloading = true;
                 GenerateAllCode(settings);
                 isDownloading = false;
+
+                GUIUtility.ExitGUI();
             }
             if (GUILayout.Button("Create All Assets", "LargeButtonMid") && !isDownloading) {
                 isDownloading = true;
                 CreateAllAssets(settings);
                 isDownloading = false;
+
+                GUIUtility.ExitGUI();
             }
             GUILayout.EndHorizontal();
 
