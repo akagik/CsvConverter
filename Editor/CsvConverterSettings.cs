@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
+
 
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
@@ -66,6 +68,12 @@ namespace CsvConverter {
             [HideIf("isEnum")]
 #endif
             public string key; // ScriptableObject の名前に使用.
+
+            public string[] keys {
+                get {
+                    return key.Split(',').Select((arg) => arg.Trim()).Where((arg) => arg.Length > 0).ToArray();
+                }
+            }
 
             // code を生成できるか？
             public bool canGenerateCode {

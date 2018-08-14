@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace CsvConverter {
@@ -47,7 +48,7 @@ namespace CsvConverter {
             AssetDatabase.Refresh();
         }
 
-        public static void GenerateTableClass(CsvConverterSettings.Setting setting, string tableClassName, Field key) {
+        public static void GenerateTableClass(CsvConverterSettings.Setting setting, string tableClassName, Field[] keys) {
             string classData = "";
             classData = "using UnityEngine;\n";
             classData += "using System.Collections.Generic;\n";
@@ -57,13 +58,24 @@ namespace CsvConverter {
             classData += "{\n";
             classData += string.Format("    public List<{0}> {1} = new List<{0}>();\n", setting.className, ROWS);
 
-            if (key != null && key.isValid) {
+            if (keys != null && keys.All((arg) => arg.isValid)) {
                 classData += "\n";
-                classData += string.Format("    public {0} Find({1} key)\n", setting.className, key.typeName);
+
+                string argStr = "";
+                string condStr = "";
+
+                for (int i = 0; i < keys.Length; i++) {
+                    argStr += keys[i].typeName + " key" + i + ", ";
+                    condStr += string.Format("o.{0} == key{1} && ", keys[i].fieldName, i);
+                }
+                argStr = argStr.Substring(0, argStr.Length - 2);
+                condStr = condStr.Substring(0, condStr.Length - 4);
+
+                classData += string.Format("    public {0} Find({1})\n", setting.className, argStr);
                 classData += "    {\n";
                 classData += string.Format("        foreach ({0} o in {1})\n", setting.className, ROWS);
                 classData += "        {\n";
-                classData += string.Format("            if (o.{0} == key)\n", key.fieldName);
+                classData += string.Format("            if ({0})\n", condStr);
                 classData += "            {\n";
                 classData += "                return o;\n";
                 classData += "            }\n";
@@ -83,15 +95,19 @@ namespace CsvConverter {
             AssetDatabase.Refresh();
         }
 
-        public static int FindKeyIndex(CsvConverterSettings.Setting setting, Field[] fields) {
-            if (setting.key != "") {
+        public static int[] FindKeyIndexes(CsvConverterSettings.Setting setting, Field[] fields) {
+            List<int> indexes = new List<int>();
+
+            string[] keys = setting.keys;
+
+            for (int j = 0; j < keys.Length; j++) {
                 for (int i = 0; i < fields.Length; i++) {
-                    if (fields[i].fieldName == setting.key) {
-                        return i;
+                    if (fields[i].fieldName == keys[j]) {
+                        indexes.Add(i);
                     }
                 }
             }
-            return -1;
+            return indexes.ToArray();
         }
 
         public static bool CreateCsvAssets(CsvConverterSettings.Setting setting, string tableClassName, Field[] fields, CsvData content) {
@@ -150,7 +166,7 @@ namespace CsvConverter {
 
 
             // Asset の名前をつけるときに利用する key.
-            int keyIndex = FindKeyIndex(setting, fields);
+            int[] keyIndexes = FindKeyIndexes(setting, fields);
 
             for (int i = 0; i < content.row; i++) {
                 int line = i + 2 + 1;
@@ -160,14 +176,20 @@ namespace CsvConverter {
 #endif
 
                 string fileName = setting.className + i + ".asset";
-                if (keyIndex != -1) {
-                    string key = content.Get(i, keyIndex).Trim();
+                if (keyIndexes.Length > 0) {
+                    fileName = setting.className;
+                    for (int j = 0; j < keyIndexes.Length; j++) {
+                        int keyIndex = keyIndexes[j];
 
-                    if (key == "") {
-                        Debug.LogWarningFormat("{0} line {1}: key が存在しない行をスキップしました", setting.className, line);
-                        continue;
+                        string key = content.Get(i, keyIndex).Trim();
+
+                        if (key == "") {
+                            Debug.LogWarningFormat("{0} line {1}: key が存在しない行をスキップしました", setting.className, line);
+                            continue;
+                        }
+                        fileName += "_" + key;
                     }
-                    fileName = setting.className + "_" + content.Get(i, keyIndex) + ".asset";
+                    fileName += ".asset";
                 }
 
                 string filePath = Path.Combine(folder, fileName);

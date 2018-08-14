@@ -1,4 +1,5 @@
 using System.IO;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
@@ -43,11 +44,21 @@ namespace CsvConverter {
                 }
 
                 if (s.tableGenerate) {
-                    int keyIndex = ClassGenerator.FindKeyIndex(s, fields);
+                    string[] keyStrings = s.keys;
+                    Debug.Log("len: " + keyStrings.Length);
+                    Debug.Log("len: " + keyStrings.ToString<string>());
 
-                    Field key = null;
-                    if (keyIndex != -1) {
-                        key = fields[keyIndex];
+                    int[] keyIndexes = ClassGenerator.FindKeyIndexes(s, fields);
+
+                    Field[] key = null;
+                    if (keyIndexes.Length > 0) {
+                        List<Field> keyFieldList = new List<Field>();
+
+                        for (int i = 0; i < keyIndexes.Length; i++) {
+                            keyFieldList.Add(fields[i]);
+                        }
+
+                        key = keyFieldList.ToArray();
                     }
                     ClassGenerator.GenerateTableClass(s, s.className + "Table", key);
                     Debug.Log("Create " + Path.Combine(s.destination, s.className + "Table.cs"));
