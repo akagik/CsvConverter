@@ -6,29 +6,30 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace CsvConverter
-{
-    public class ClassGenerator
-    {
+namespace CsvConverter {
+    public class ClassGenerator {
         const string FIELD_FORMAT = "    public {0} {1};\n";
         public static readonly string ROWS = "rows";
 
-        static public void GenerateClass(string destination, string name, Field[] fields)
-        {
+        static public void GenerateClass(string destination, string name, Field[] fields, bool onlyTable) {
             string classData = "";
             classData = "using UnityEngine;\n";
             classData += "using System.Collections.Generic;\n";
             classData += "\n";
 
-            classData += "public class " + name + " : ScriptableObject\n";
+            if (onlyTable) {
+                classData += "[System.Serializable]\n";
+                classData += "public class " + name + "\n";
+            }
+            else {
+                classData += "public class " + name + " : ScriptableObject\n";
+            }
             classData += "{\n";
 
-            for (int col = 0; col < fields.Length; col++)
-            {
+            for (int col = 0; col < fields.Length; col++) {
                 Field f = fields[col];
 
-                if (f.fieldName == "" || f.typeName == "")
-                {
+                if (f.fieldName == "" || f.typeName == "") {
                     continue;
                 }
 
@@ -38,8 +39,7 @@ namespace CsvConverter
             classData += "}\n";
 
             string filePath = Path.Combine(Path.Combine(Application.dataPath, destination), name + ".cs");
-            using (StreamWriter writer = File.CreateText(filePath))
-            {
+            using (StreamWriter writer = File.CreateText(filePath)) {
                 writer.WriteLine(classData);
             }
 
@@ -47,8 +47,7 @@ namespace CsvConverter
             AssetDatabase.Refresh();
         }
 
-        public static void GenerateTableClass(CsvConverterSettings.Setting setting, string tableClassName, Field key)
-        {
+        public static void GenerateTableClass(CsvConverterSettings.Setting setting, string tableClassName, Field key) {
             string classData = "";
             classData = "using UnityEngine;\n";
             classData += "using System.Collections.Generic;\n";
@@ -58,8 +57,7 @@ namespace CsvConverter
             classData += "{\n";
             classData += string.Format("    public List<{0}> {1} = new List<{0}>();\n", setting.className, ROWS);
 
-            if (key != null && key.isValid)
-            {
+            if (key != null && key.isValid) {
                 classData += "\n";
                 classData += string.Format("    public {0} Find({1} key)\n", setting.className, key.typeName);
                 classData += "    {\n";
@@ -77,8 +75,7 @@ namespace CsvConverter
             classData += "}\n";
 
             string filePath = Path.Combine(Path.Combine(Application.dataPath, setting.destination), tableClassName + ".cs");
-            using (StreamWriter writer = File.CreateText(filePath))
-            {
+            using (StreamWriter writer = File.CreateText(filePath)) {
                 writer.WriteLine(classData);
             }
 
@@ -86,14 +83,10 @@ namespace CsvConverter
             AssetDatabase.Refresh();
         }
 
-        public static int FindKeyIndex(CsvConverterSettings.Setting setting, Field[] fields)
-        {
-            if (setting.key != "")
-            {
-                for (int i = 0; i < fields.Length; i++)
-                {
-                    if (fields[i].fieldName == setting.key)
-                    {
+        public static int FindKeyIndex(CsvConverterSettings.Setting setting, Field[] fields) {
+            if (setting.key != "") {
+                for (int i = 0; i < fields.Length; i++) {
+                    if (fields[i].fieldName == setting.key) {
                         return i;
                     }
                 }
@@ -101,27 +94,22 @@ namespace CsvConverter
             return -1;
         }
 
-        public static bool CreateCsvAssets(CsvConverterSettings.Setting setting, string tableClassName, Field[] fields, CsvData content)
-        {
+        public static bool CreateCsvAssets(CsvConverterSettings.Setting setting, string tableClassName, Field[] fields, CsvData content) {
             Type assetType = GetTypeByName(setting.className);
-            if (assetType == null)
-            {
+            if (assetType == null) {
                 EditorUtility.DisplayDialog("Error", "Cannot find the class \"" + setting.className + "\", please execute \"Tools/CsvConverter/Generate Code\".", "ok");
                 return false;
             }
 
             // class のフィールド名と一致しないものは除外する.
-            for (int j = 0; j < fields.Length; j++)
-            {
-                if (!fields[j].isValid)
-                {
+            for (int j = 0; j < fields.Length; j++) {
+                if (!fields[j].isValid) {
                     continue;
                 }
 
                 FieldInfo info = assetType.GetField(fields[j].fieldName);
 
-                if (info == null)
-                {
+                if (info == null) {
                     Debug.LogWarningFormat("{0} に存在しないフィールド \"{1}\" を無視", setting.className, fields[j].fieldName);
                     fields[j].isValid = false;
                 }
@@ -136,11 +124,9 @@ namespace CsvConverter
             FieldInfo dataListField = null;
             object dataList = null;
 
-            if (setting.tableGenerate)
-            {
+            if (setting.tableGenerate) {
                 tableType = GetTypeByName(tableClassName);
-                if (tableType == null)
-                {
+                if (tableType == null) {
                     EditorUtility.DisplayDialog("Error", "Cannot find the class \"" + tableClassName + "\", please execute \"Tools/CsvConverter/Generate Code\".", "ok");
                     return false;
                 }
@@ -150,8 +136,7 @@ namespace CsvConverter
                 string filePath = Path.Combine(folder, tableClassName + ".asset");
 
                 table = AssetDatabase.LoadAssetAtPath<ScriptableObject>(filePath);
-                if (table == null)
-                {
+                if (table == null) {
                     table = ScriptableObject.CreateInstance(tableType);
                     AssetDatabase.CreateAsset(table, filePath);
                 }
@@ -167,8 +152,7 @@ namespace CsvConverter
             // Asset の名前をつけるときに利用する key.
             int keyIndex = FindKeyIndex(setting, fields);
 
-            for (int i = 0; i < content.row; i++)
-            {
+            for (int i = 0; i < content.row; i++) {
                 int line = i + 2 + 1;
 
 #if VERBOSE
@@ -176,12 +160,10 @@ namespace CsvConverter
 #endif
 
                 string fileName = setting.className + i + ".asset";
-                if (keyIndex != -1)
-                {
+                if (keyIndex != -1) {
                     string key = content.Get(i, keyIndex).Trim();
 
-                    if (key == "")
-                    {
+                    if (key == "") {
                         Debug.LogWarningFormat("{0} line {1}: key が存在しない行をスキップしました", setting.className, line);
                         continue;
                     }
@@ -189,16 +171,24 @@ namespace CsvConverter
                 }
 
                 string filePath = Path.Combine(folder, fileName);
-                var data = AssetDatabase.LoadAssetAtPath(filePath, assetType);
-                if (data == null)
-                {
-                    data = ScriptableObject.CreateInstance(assetType);
-                    AssetDatabase.CreateAsset(data, filePath);
-                    Debug.LogFormat("Create {0}", filePath);
+
+                object data = null;
+
+                // テーブルのみ作成する場合は ScriptableObject としてではなく
+                // 通常のインスタンスとして作成する.
+                if (setting.onlyTableCreate) {
+                    data = Activator.CreateInstance(assetType);
+                }
+                else {
+                    data = AssetDatabase.LoadAssetAtPath(filePath, assetType);
+                    if (data == null) {
+                        data = ScriptableObject.CreateInstance(assetType);
+                        AssetDatabase.CreateAsset(data as UnityEngine.Object, filePath);
+                        Debug.LogFormat("Create {0}", filePath);
+                    }
                 }
 
-                for (int j = 0; j < content.col; j++)
-                {
+                for (int j = 0; j < content.col; j++) {
                     if (!fields[j].isValid) continue;
 
                     FieldInfo info = assetType.GetField(fields[j].fieldName);
@@ -207,21 +197,17 @@ namespace CsvConverter
                     object value = null;
 
                     // 文字列型のときは " でラップする.
-                    if (info.FieldType == typeof(string))
-                    {
+                    if (info.FieldType == typeof(string)) {
                         sValue = "\"" + sValue + "\"";
                     }
 
-                    if (sValue == "")
-                    {
+                    if (sValue == "") {
                         Debug.LogWarningFormat("{0} {1}行{2}列目: 空の値があります: {3}=\"{4}\"", setting.className, line, j + 1, info.Name, sValue);
                     }
-                    else
-                    {
+                    else {
                         value = Str2TypeConverter.Convert(info.FieldType, sValue);
 
-                        if (value == null)
-                        {
+                        if (value == null) {
                             Debug.LogWarningFormat("{0} {1}行{2}列目: 変換に失敗しました: {3}=\"{4}\"", setting.className, line, j + 1, info.Name, sValue);
                         }
                     }
@@ -229,18 +215,18 @@ namespace CsvConverter
                     info.SetValue(data, value);
                 }
 
-                EditorUtility.SetDirty(data);
+                if (!setting.onlyTableCreate) {
+                    EditorUtility.SetDirty(data as UnityEngine.Object);
+                }
 
-                if (setting.tableGenerate)
-                {
+                if (setting.tableGenerate) {
                     dataList.GetType().GetMethod("Add").Invoke(dataList, new object[] { data });
                 }
 
                 show_progress(setting.className, (float)i / content.row, i, content.row);
             }
 
-            if (setting.tableGenerate)
-            {
+            if (setting.tableGenerate) {
                 EditorUtility.SetDirty(table);
             }
 
@@ -249,12 +235,9 @@ namespace CsvConverter
             return true;
         }
 
-        public static Type GetTypeByName(string name)
-        {
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                foreach (Type type in assembly.GetTypes())
-                {
+        public static Type GetTypeByName(string name) {
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                foreach (Type type in assembly.GetTypes()) {
                     if (type.Name == name)
                         return type;
                 }
@@ -263,13 +246,11 @@ namespace CsvConverter
             return null;
         }
 
-        private static void show_progress(string name, float progress, int i, int total)
-        {
+        private static void show_progress(string name, float progress, int i, int total) {
             EditorUtility.DisplayProgressBar("Progress", progress_msg(name, i, total), progress);
         }
 
-        private static string progress_msg(string name, int i, int total)
-        {
+        private static string progress_msg(string name, int i, int total) {
             return string.Format("Creating {0} ({1}/{2})", name, i, total);
         }
 

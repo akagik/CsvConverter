@@ -45,8 +45,26 @@ namespace CsvConverter {
 #endif
             public string destination;
             public bool isEnum;
+
+#if ODIN_INSPECTOR
+            [HideIf("isEnum")]
+#endif
             public bool classGenerate;
+
+#if ODIN_INSPECTOR
+            [HideIf("isEnum")]
+#endif
             public bool tableGenerate;
+
+#if ODIN_INSPECTOR
+            [ShowIf("tableGenerate")]
+            [HideIf("isEnum")]
+#endif
+            public bool onlyTableCreate;
+
+#if ODIN_INSPECTOR
+            [HideIf("isEnum")]
+#endif
             public string key; // ScriptableObject の名前に使用.
 
             // code を生成できるか？
