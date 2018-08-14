@@ -44,10 +44,6 @@ namespace CsvConverter {
                 }
 
                 if (s.tableGenerate) {
-                    string[] keyStrings = s.keys;
-                    Debug.Log("len: " + keyStrings.Length);
-                    Debug.Log("len: " + keyStrings.ToString<string>());
-
                     int[] keyIndexes = ClassGenerator.FindKeyIndexes(s, fields);
 
                     Field[] key = null;
