@@ -128,7 +128,10 @@ namespace CsvConverter
                     {
                         data = ScriptableObject.CreateInstance(assetType);
                         AssetDatabase.CreateAsset(data as UnityEngine.Object,filePath);
-                        Debug.LogFormat("Create {0}",filePath);
+                        Debug.LogFormat("Create \"{0}\"",filePath);
+                    }
+                    else {
+                        Debug.LogFormat("Update \"{0}\"",filePath);
                     }
                 }
 
@@ -236,6 +239,7 @@ namespace CsvConverter
             if(setting.tableGenerate)
             {
                 EditorUtility.SetDirty(table);
+                Debug.LogFormat("Create \"{0}\"", Path.Combine(folder,tableClassName + ".asset"));
             }
 
             AssetDatabase.SaveAssets();

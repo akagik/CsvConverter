@@ -110,7 +110,7 @@ namespace CsvConverter {
             List<int> indexes = new List<int>();
 
             string[] keys = setting.keys;
-            Debug.Log(keys.ToString<string>());
+            // Debug.Log(keys.ToString<string>());
 
             for (int j = 0; j < keys.Length; j++) {
                 for (int i = 0; i < fields.Length; i++) {

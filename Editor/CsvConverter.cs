@@ -31,7 +31,7 @@ namespace CsvConverter {
                 CsvData contents = csv.Slice(1);
                 EnumGenerator.Generate(s.destination, s.className, headers, contents);
 
-                Debug.Log("Create " + Path.Combine(s.destination, s.className + ".cs"));
+                Debug.LogFormat("Create \"{0}\"", Path.Combine(s.destination, s.className + ".cs"));
             }
             else {
                 CsvData headers = csv.Slice(0, 2);
@@ -41,7 +41,7 @@ namespace CsvConverter {
 
                 if (s.classGenerate) {
                     ClassGenerator.GenerateClass(s.destination, s.className, fields, s.tableGenerate && s.onlyTableCreate);
-                    Debug.Log("Create " + Path.Combine(s.destination, s.className + ".cs"));
+                    Debug.LogFormat("Create \"{0}\"", Path.Combine(s.destination, s.className + ".cs"));
                 }
 
                 if (s.tableClassGenerate) {
@@ -59,6 +59,7 @@ namespace CsvConverter {
                         key = keyFieldList.ToArray();
                     }
                     ClassGenerator.GenerateTableClass(s, s.tableClassName, key);
+                    Debug.LogFormat("Create \"{0}\"", Path.Combine(s.destination, s.tableClassName + ".cs"));
                 }
             }
         }
