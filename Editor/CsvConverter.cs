@@ -58,7 +58,7 @@ namespace CsvConverter {
 
                         key = keyFieldList.ToArray();
                     }
-                    ClassGenerator.GenerateTableClass(s, s.className + "Table", key);
+                    ClassGenerator.GenerateTableClass(s, s.tableClassName, key);
                 }
             }
         }
@@ -85,7 +85,7 @@ namespace CsvConverter {
 
             Field[] fields = GetFieldsFromHeader(headers);
 
-            bool success = AssetsGenerator.CreateCsvAssets(s, s.className + "Table", fields, contents);
+            bool success = AssetsGenerator.CreateCsvAssets(s, s.tableClassName, fields, contents);
 
             if (!success) {
                 return;

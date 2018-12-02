@@ -52,6 +52,11 @@ namespace CsvConverter {
             [FolderPath(ParentFolder = "Assets", RequireExistingPath = true)]
 #endif
             public string destination;
+
+#if ODIN_INSPECTOR
+            [HideIf("classGenerate")]
+            [HideIf("tableGenerate")]
+#endif
             public bool isEnum;
 
 #if ODIN_INSPECTOR
@@ -60,21 +65,22 @@ namespace CsvConverter {
             public bool classGenerate;
 
 #if ODIN_INSPECTOR
-            [HideIf("isEnum")]
-            [ToggleGroup("tableGenerate")]
+            [ToggleGroup("tableGenerate", "Table Generate")]
 #endif
             public bool tableGenerate;
 
 #if ODIN_INSPECTOR
-            [ShowIf("tableGenerate")]
-            [HideIf("isEnum")]
+            [ToggleGroup("tableGenerate")]
+            [ValidateInput("IsValidClassName")]
+#endif
+            public string tableClassName;
+
+#if ODIN_INSPECTOR
             [ToggleGroup("tableGenerate")]
 #endif
             public bool tableClassGenerate;
 
 #if ODIN_INSPECTOR
-            [ShowIf("tableGenerate")]
-            [HideIf("isEnum")]
             [ToggleGroup("tableGenerate")]
 #endif
             public bool onlyTableCreate;
@@ -116,6 +122,15 @@ namespace CsvConverter {
                     canCreateAsset = true;
                 }
             }
+
+#if ODIN_INSPECTOR && UNITY_EDITOR
+            private bool IsValidClassName(string name) {
+                if (name == null) {
+                    return false;
+                }
+                return name.Length > 0 && char.IsUpper(name[0]);
+            }
+#endif
         }
     }
 }
