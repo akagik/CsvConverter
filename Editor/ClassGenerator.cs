@@ -27,14 +27,25 @@ namespace CsvConverter {
             }
             classData += "{\n";
 
+            HashSet<string> addedFields = new HashSet<string>();
             for (int col = 0; col < fields.Length; col++) {
                 Field f = fields[col];
+                if (addedFields.Contains(f.fieldNameWithoutIndexing)) break;
 
-                if (f.fieldName == "" || f.typeName == "") {
+                string fieldName = f.fieldName;
+                string typeName = f.typeName;
+
+                if (fieldName == "" || typeName == "") {
                     continue;
                 }
 
-                classData += string.Format(FIELD_FORMAT, f.typeName, f.fieldName);
+                if (f.isArrayField) {
+                    fieldName = f.fieldNameWithoutIndexing;
+                    typeName = typeName + "[]";
+                }
+
+                classData += string.Format(FIELD_FORMAT, typeName, fieldName);
+                addedFields.Add(f.fieldNameWithoutIndexing);
             }
 
             classData += "}\n";
@@ -99,13 +110,14 @@ namespace CsvConverter {
             List<int> indexes = new List<int>();
 
             string[] keys = setting.keys;
+            Debug.Log(keys.ToString<string>());
 
             for (int j = 0; j < keys.Length; j++) {
                 for (int i = 0; i < fields.Length; i++) {
                     if (fields[i].fieldName == keys[j]) {
                         indexes.Add(i);
                     }
-                }
+                } 
             }
             return indexes.ToArray();
         }
@@ -122,11 +134,16 @@ namespace CsvConverter {
                 if (!fields[j].isValid) {
                     continue;
                 }
+                
+                string fieldName = fields[j].fieldName;
+                if (fieldName.Contains("[")) {
+                    fieldName = fieldName.Remove(fieldName.LastIndexOf("["));
+                }
 
-                FieldInfo info = assetType.GetField(fields[j].fieldName);
+                FieldInfo info = assetType.GetField(fieldName);
 
                 if (info == null) {
-                    Debug.LogWarningFormat("{0} に存在しないフィールド \"{1}\" を無視", setting.className, fields[j].fieldName);
+                    Debug.LogWarningFormat("{0} に存在しないフィールド \"{1}\" を無視", setting.className, fieldName);
                     fields[j].isValid = false;
                 }
             }
@@ -210,16 +227,41 @@ namespace CsvConverter {
                     }
                 }
 
+                // フィールド名に[]が付いているカラムを先に検索し、配列インスタンスを生成しておく.
                 for (int j = 0; j < content.col; j++) {
                     if (!fields[j].isValid) continue;
+                    
+                    FieldInfo info = assetType.GetField(fields[j].fieldNameWithoutIndexing);
 
-                    FieldInfo info = assetType.GetField(fields[j].fieldName);
+                    // フィールド名が配列要素の場合は配列のデータをセットしておく.
+                    if (fields[j].isArrayField) {
+                        int length = 0;
+                        var v = Array.CreateInstance(info.FieldType.GetElementType(), length);
+                        info.SetValue(data, v);
+                    }
+                }
+
+                for (int j = 0; j < content.col; j++) {
+                    if (!fields[j].isValid) continue;
+                    
+                    string fieldName = fields[j].fieldName;
+                    if (fieldName.Contains("[")) {
+                        fieldName = fieldName.Remove(fieldName.LastIndexOf("["));
+                    }
+
+                    FieldInfo info = assetType.GetField(fieldName);
+                    Type fieldType;
+                    if (fields[j].fieldName.Contains("[")) {
+                        fieldType = info.FieldType.GetElementType();
+                    } else {
+                        fieldType = info.FieldType;
+                    }
 
                     string sValue = content.Get(i, j);
                     object value = null;
 
                     // 文字列型のときは " でラップする.
-                    if (info.FieldType == typeof(string)) {
+                    if (fieldType == typeof(string)) {
                         sValue = "\"" + sValue + "\"";
                     }
 
@@ -227,13 +269,35 @@ namespace CsvConverter {
                         Debug.LogWarningFormat("{0} {1}行{2}列目: 空の値があります: {3}=\"{4}\"", setting.className, line, j + 1, info.Name, sValue);
                     }
                     else {
-                        value = Str2TypeConverter.Convert(info.FieldType, sValue);
+                        value = Str2TypeConverter.Convert(fieldType, sValue);
 
                         if (value == null) {
                             Debug.LogWarningFormat("{0} {1}行{2}列目: 変換に失敗しました: {3}=\"{4}\"", setting.className, line, j + 1, info.Name, sValue);
                         }
                     }
 
+                    // フィールド名が配列要素の場合
+                    // もともとの配列データを読み込んで、そこに value を追加した配列を value とする.
+                    // TODO 添字を反映させる.
+                    if (fields[j].fieldName.Contains("[")) {
+                        var t = ((IEnumerable) info.GetValue(data));
+
+                        Type listType = typeof(List<>);
+                        var constructedListType = listType.MakeGenericType(info.FieldType.GetElementType());
+                        var objects = Activator.CreateInstance(constructedListType);
+
+                        IEnumerable<object> infoValue = ((IEnumerable) info.GetValue(data)).Cast<object>();
+
+                        if (infoValue != null) {
+                            for (int k=0; k<infoValue.Count(); k++) {
+                                object obj = infoValue.ElementAt(k);
+                                objects.GetType().GetMethod("Add").Invoke(objects, new object[] { obj });
+                            }
+                        }
+                        objects.GetType().GetMethod("Add").Invoke(objects, new object[] { value });
+                        value = objects.GetType().GetMethod("ToArray").Invoke(objects, new object[] { });
+                    }
+                    
                     info.SetValue(data, value);
                 }
 
