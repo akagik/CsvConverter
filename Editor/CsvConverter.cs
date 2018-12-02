@@ -2,6 +2,7 @@ using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 namespace CsvConverter {
     public class CsvConverter {
@@ -46,18 +47,18 @@ namespace CsvConverter {
                 if (s.tableGenerate) {
                     int[] keyIndexes = ClassGenerator.FindKeyIndexes(s, fields);
 
+                    string[] keys = s.keys;
                     Field[] key = null;
                     if (keyIndexes.Length > 0) {
                         List<Field> keyFieldList = new List<Field>();
 
                         for (int i = 0; i < keyIndexes.Length; i++) {
-                            keyFieldList.Add(fields[i]);
+                            keyFieldList.Add(fields[keyIndexes[i]]);
                         }
 
                         key = keyFieldList.ToArray();
                     }
                     ClassGenerator.GenerateTableClass(s, s.className + "Table", key);
-                    Debug.Log("Create " + Path.Combine(s.destination, s.className + "Table.cs"));
                 }
             }
         }
