@@ -99,7 +99,7 @@ namespace CsvConverter {
                 }
 
                 // クラスが生成されていない場合も Asset を生成できない
-                Type assetType = ClassGenerator.GetTypeByName(className);
+                Type assetType = AssetsGenerator.GetTypeByName(className);
                 if (assetType == null) {
                     canCreateAsset = false;
                 }
