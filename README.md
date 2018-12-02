@@ -53,8 +53,10 @@ Generic の CsvParser が必要:
 | Destination | 生成した ScriptableObject を配置するディレクトリへのパス |
 | Is Enum | enum かどうか. True の場合は Class Generate と Table Generate は無視される. |
 | Class Generate | クラスを生成するかどうか. |
-| Table Generate | テーブルクラスとScriptableObjectを生成するかどうか. |
-| Key | ScriptableObject の名前をつけるときに利用する一意な値を持つフィールド名 |
+| Table Generate | テーブル ScriptableObjectを生成するかどうか. |
+| Table Class Generate | テーブルクラスを生成するかどうか. |
+| Only Table Class | テーブルアセットのみ生成する. |
+| Key | ScriptableObject の名前をつけるときに利用する一意な値を持つフィールド名. カンマ区切りで複数キーを設定可能. |
 
 ## Table Generation
 Table は複数の ScriptableObject Data をまとめた ScriptableObject を継承したクラス.

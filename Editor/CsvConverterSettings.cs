@@ -61,12 +61,21 @@ namespace CsvConverter {
 
 #if ODIN_INSPECTOR
             [HideIf("isEnum")]
+            [ToggleGroup("tableGenerate")]
 #endif
             public bool tableGenerate;
 
 #if ODIN_INSPECTOR
             [ShowIf("tableGenerate")]
             [HideIf("isEnum")]
+            [ToggleGroup("tableGenerate")]
+#endif
+            public bool tableClassGenerate;
+
+#if ODIN_INSPECTOR
+            [ShowIf("tableGenerate")]
+            [HideIf("isEnum")]
+            [ToggleGroup("tableGenerate")]
 #endif
             public bool onlyTableCreate;
 

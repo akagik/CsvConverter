@@ -117,7 +117,7 @@ namespace CsvConverter
 
                 // テーブルのみ作成する場合は ScriptableObject としてではなく
                 // 通常のインスタンスとして作成する.
-                if(setting.onlyTableCreate)
+                if(setting.tableGenerate && setting.onlyTableCreate)
                 {
                     data = Activator.CreateInstance(assetType);
                 }
@@ -220,7 +220,7 @@ namespace CsvConverter
                     info.SetValue(data,value);
                 }
 
-                if(!setting.onlyTableCreate)
+                if(!setting.tableGenerate || !setting.onlyTableCreate)
                 {
                     EditorUtility.SetDirty(data as UnityEngine.Object);
                 }

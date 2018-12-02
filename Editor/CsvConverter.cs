@@ -40,11 +40,11 @@ namespace CsvConverter {
                 Field[] fields = GetFieldsFromHeader(headers);
 
                 if (s.classGenerate) {
-                    ClassGenerator.GenerateClass(s.destination, s.className, fields, s.onlyTableCreate);
+                    ClassGenerator.GenerateClass(s.destination, s.className, fields, s.tableGenerate && s.onlyTableCreate);
                     Debug.Log("Create " + Path.Combine(s.destination, s.className + ".cs"));
                 }
 
-                if (s.tableGenerate) {
+                if (s.tableClassGenerate) {
                     int[] keyIndexes = ClassGenerator.FindKeyIndexes(s, fields);
 
                     string[] keys = s.keys;
