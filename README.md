@@ -102,3 +102,15 @@ public class HumanTable : ScriptableObject
     }
 }
 ```
+
+## 配列添字の対応
+固定長の配列の場合、配列の要素を各カラムに入れることも可能.
+この場合、 *型名には [] を含めない* ことに注意.
+
+### 実際の例 (human.csv)
+| humanId | friendIds[0] | friendIds[1] | friendIds[2] |
+| ------- | ------------ | ------------ | ------------ |
+| int | int | int | int |
+| 1 | | 2 | 4 | 5 |
+| 2 | | 1 | 3 | 5 |
+
