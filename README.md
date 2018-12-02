@@ -54,6 +54,7 @@ Generic の CsvParser が必要:
 | Is Enum | enum かどうか. True の場合は Class Generate と Table Generate は無視される. |
 | Class Generate | クラスを生成するかどうか. |
 | Table Generate | テーブル ScriptableObjectを生成するかどうか. |
+| Table Class Name | テーブルクラスの名前. |
 | Table Class Generate | テーブルクラスを生成するかどうか. |
 | Only Table Class | テーブルアセットのみ生成する. |
 | Key | ScriptableObject の名前をつけるときに利用する一意な値を持つフィールド名. カンマ区切りで複数キーを設定可能. |

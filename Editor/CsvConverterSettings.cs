@@ -43,6 +43,7 @@ namespace CsvConverter {
         [Serializable]
         public class Setting {
 #if ODIN_INSPECTOR
+            [Title("Basic Settings")]
             [FilePath(ParentFolder = "Assets", RequireExistingPath = true)]
 #endif
             public string csvFilePath;
@@ -51,11 +52,10 @@ namespace CsvConverter {
 #if ODIN_INSPECTOR
             [FolderPath(ParentFolder = "Assets", RequireExistingPath = true)]
 #endif
-            public string destination;
+            public string destination = "";
 
 #if ODIN_INSPECTOR
-            [HideIf("classGenerate")]
-            [HideIf("tableGenerate")]
+            [Title("Advanced Settings")]
 #endif
             public bool isEnum;
 
