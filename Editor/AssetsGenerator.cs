@@ -11,7 +11,7 @@ namespace CsvConverter
 {
     public static class AssetsGenerator
     {
-        public static bool CreateCsvAssets(CsvConverterSettings.Setting setting,string tableClassName,Field[] fields,CsvData content)
+        public static bool CreateCsvAssets(CsvConverterSettings.Setting setting,Field[] fields,CsvData content)
         {
             Type assetType = GetTypeByName(setting.className);
             if(assetType == null)
@@ -54,16 +54,16 @@ namespace CsvConverter
 
             if(setting.tableGenerate)
             {
-                tableType = GetTypeByName(tableClassName);
+                tableType = GetTypeByName(setting.tableClassName);
                 if(tableType == null)
                 {
-                    EditorUtility.DisplayDialog("Error","Cannot find the class \"" + tableClassName + "\", please execute \"Tools/CsvConverter/Generate Code\".","ok");
+                    EditorUtility.DisplayDialog("Error","Cannot find the class \"" + setting.tableClassName + "\", please execute \"Tools/CsvConverter/Generate Code\".","ok");
                     return false;
                 }
 
                 dataListField = tableType.GetField(ClassGenerator.ROWS);
 
-                string filePath = Path.Combine(folder,tableClassName + ".asset");
+                string filePath = Path.Combine(folder,setting.tableAssetName + ".asset");
 
                 table = AssetDatabase.LoadAssetAtPath<ScriptableObject>(filePath);
                 if(table == null)
@@ -239,7 +239,7 @@ namespace CsvConverter
             if(setting.tableGenerate)
             {
                 EditorUtility.SetDirty(table);
-                Debug.LogFormat("Create \"{0}\"", Path.Combine(folder,tableClassName + ".asset"));
+                Debug.LogFormat("Create \"{0}\"", Path.Combine(folder,setting.tableAssetName + ".asset"));
             }
 
             AssetDatabase.SaveAssets();

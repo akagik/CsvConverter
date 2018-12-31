@@ -86,7 +86,7 @@ namespace CsvConverter {
 
             Field[] fields = GetFieldsFromHeader(headers);
 
-            bool success = AssetsGenerator.CreateCsvAssets(s, s.tableClassName, fields, contents);
+            bool success = AssetsGenerator.CreateCsvAssets(s, fields, contents);
 
             if (!success) {
                 return;

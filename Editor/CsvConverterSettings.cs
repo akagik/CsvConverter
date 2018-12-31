@@ -77,6 +77,12 @@ namespace CsvConverter {
 
 #if ODIN_INSPECTOR
             [ToggleGroup("tableGenerate")]
+            [InfoBox("If empty string, its value is tableClassName.")]
+#endif
+            public string _tableAssetName;
+
+#if ODIN_INSPECTOR
+            [ToggleGroup("tableGenerate")]
 #endif
             public bool tableClassGenerate;
 
@@ -120,6 +126,15 @@ namespace CsvConverter {
                 }
                 else {
                     canCreateAsset = true;
+                }
+            }
+
+            public string tableAssetName {
+                get {
+                    if (_tableAssetName.Length > 0) {
+                        return _tableAssetName;
+                    }
+                    return tableClassName;
                 }
             }
 
