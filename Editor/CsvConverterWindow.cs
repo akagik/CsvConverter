@@ -32,7 +32,13 @@ namespace CsvConverter {
                 var s = settings.list[i];
 
                 GUILayout.BeginHorizontal("box");
-                GUILayout.Label(s.className);
+
+                if (s.tableGenerate) {
+                    GUILayout.Label(s.tableAssetName);
+                }
+                else {
+                    GUILayout.Label(s.className);
+                }
 
                 GUI.enabled = s.canGenerateCode;
                 if (GUILayout.Button("Generate Code", GUILayout.Width(110)) && !isDownloading) {

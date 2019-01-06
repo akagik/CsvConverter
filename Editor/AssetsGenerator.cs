@@ -233,7 +233,7 @@ namespace CsvConverter
                     dataList.GetType().GetMethod("Add").Invoke(dataList,new object[] { data });
                 }
 
-                show_progress(setting.className,(float)i / content.row,i,content.row);
+                show_progress(setting.className,(float) (i + 1) / content.row,i + 1,content.row);
 
                 createdRowCount++;
             }

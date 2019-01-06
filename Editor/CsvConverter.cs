@@ -144,6 +144,7 @@ namespace CsvConverter {
             else {
                 Debug.LogError("Fails to create asset");
             }
+            EditorUtility.ClearProgressBar();
         }
 
         public static Field[] GetFieldsFromHeader(CsvData grid) {
