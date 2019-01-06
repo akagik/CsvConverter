@@ -12,8 +12,13 @@ namespace CsvConverter
     public class AssetsGenerator
     {
         private CsvConverterSettings.Setting setting;
+        private Field[] fields;
+        private CsvData content;
+
+        // setup 情報
         private Type assetType;
         private string dstFolder;
+        private int[] keyIndexes;
 
         // テーブル情報
         // これらの情報は setting.tableGenerate が true のときのみ利用される.
@@ -21,13 +26,18 @@ namespace CsvConverter
         private ScriptableObject tableInstance;
         private object dataList = null;
 
-        public AssetsGenerator(CsvConverterSettings.Setting _setting) {
+        public AssetsGenerator(CsvConverterSettings.Setting _setting, Field[] _fields, CsvData _content) {
             setting = _setting;
+            fields = _fields;
+            content = _content;
         }
 
         public void Setup(Type _assetType) {
             assetType = _assetType;
             dstFolder = Path.Combine("Assets",setting.destination);
+
+            // Asset の名前をつけるときに利用する key.
+            keyIndexes = ClassGenerator.FindKeyIndexes(setting,fields);
         }
 
         // テーブルありの設定
@@ -53,11 +63,44 @@ namespace CsvConverter
             dataList.GetType().GetMethod("Clear").Invoke(dataList,null);
         }
 
-        public bool CreateCsvAssets(Field[] fields,CsvData content)
-        {
-            // Asset の名前をつけるときに利用する key.
-            int[] keyIndexes = ClassGenerator.FindKeyIndexes(setting,fields);
+        private string createAssetName(int rowIndex) {
+            string fileName = "";
 
+            // キーがある場合は、キーの値をアセット名に含める.
+            if(keyIndexes.Length > 0)
+            {
+                fileName = setting.className;
+                for(int j = 0; j < keyIndexes.Length; j++)
+                {
+                    int keyIndex = keyIndexes[j];
+                    fileName += "_" + content.Get(rowIndex,keyIndex).Trim();
+                }
+                fileName += ".asset";
+            }
+            else {
+                fileName = setting.className + rowIndex + ".asset";
+            }
+
+            return fileName;
+        }
+
+        private bool checkKeyIsValid(int rowIndex) {
+            for(int j = 0; j < keyIndexes.Length; j++)
+            {
+                int keyIndex = keyIndexes[j];
+                string key = content.Get(rowIndex,keyIndex).Trim();
+
+                if(key == "")
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public bool CreateCsvAssets()
+        {
             // 各行に対してアセットを生成する.
             for(int i = 0; i < content.row; i++)
             {
@@ -67,26 +110,12 @@ namespace CsvConverter
                 Debug.Log("line:" + line);
 #endif
 
-                string fileName = setting.className + i + ".asset";
-                if(keyIndexes.Length > 0)
-                {
-                    fileName = setting.className;
-                    for(int j = 0; j < keyIndexes.Length; j++)
-                    {
-                        int keyIndex = keyIndexes[j];
-
-                        string key = content.Get(i,keyIndex).Trim();
-
-                        if(key == "")
-                        {
-                            Debug.LogWarningFormat("{0} line {1}: key が存在しない行をスキップしました",setting.className,line);
-                            continue;
-                        }
-                        fileName += "_" + key;
-                    }
-                    fileName += ".asset";
+                if (!checkKeyIsValid(i)) {
+                    Debug.LogWarningFormat("{0} line {1}: key が存在しない行をスキップしました",setting.className,line);
+                    continue;
                 }
 
+                string fileName = createAssetName(i);
                 string filePath = Path.Combine(dstFolder,fileName);
 
                 object data = null;

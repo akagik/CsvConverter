@@ -91,7 +91,7 @@ namespace CsvConverter {
 
 
             // アセットを生成する.
-            AssetsGenerator assetsGenerator = new AssetsGenerator(s);
+            AssetsGenerator assetsGenerator = new AssetsGenerator(s, fields, contents);
 
             // 生成する各要素の class type を取得
             Type assetType = GetTypeByName(s.className);
@@ -144,7 +144,7 @@ namespace CsvConverter {
                 assetsGenerator.Setup(assetType);
             }
 
-            bool success = assetsGenerator.CreateCsvAssets(fields, contents);
+            bool success = assetsGenerator.CreateCsvAssets();
 
             if (!success) {
                 return;
