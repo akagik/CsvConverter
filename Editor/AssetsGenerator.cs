@@ -161,54 +161,44 @@ namespace CsvConverter
                     }
                 }
 
+                // 各列に対して、有効なフィールドのみ値を読み込んで実際のデータに変換し、この行のインスタンス data に代入する.
                 for(int j = 0; j < content.col; j++)
                 {
                     if(!fields[j].isValid) continue;
 
-                    string fieldName = fields[j].fieldName;
-                    if(fieldName.Contains("["))
-                    {
-                        fieldName = fieldName.Remove(fieldName.LastIndexOf("["));
-                    }
+                    FieldInfo info = assetType.GetField(fields[j].fieldNameWithoutIndexing);
+                    Type fieldType = fields[j].GetTypeAs(info);
 
-                    FieldInfo info = assetType.GetField(fieldName);
-                    Type fieldType;
-                    if(fields[j].fieldName.Contains("["))
-                    {
-                        fieldType = info.FieldType.GetElementType();
-                    }
-                    else
-                    {
-                        fieldType = info.FieldType;
-                    }
-
-                    string sValue = content.Get(i,j);
+                    // (i, j) セルに格納されている生のテキストデータを fieldType 型に変換する.
                     object value = null;
-
-                    // 文字列型のときは " でラップする.
-                    if(fieldType == typeof(string))
                     {
-                        sValue = "\"" + sValue + "\"";
-                    }
+                        string sValue = content.Get(i,j);
 
-                    if(sValue == "")
-                    {
-                        Debug.LogWarningFormat("{0} {1}行{2}列目: 空の値があります: {3}=\"{4}\"",setting.className,line,j + 1,info.Name,sValue);
-                    }
-                    else
-                    {
-                        value = Str2TypeConverter.Convert(fieldType,sValue);
-
-                        if(value == null)
+                        // 文字列型のときは " でラップする.
+                        if(fieldType == typeof(string))
                         {
-                            Debug.LogWarningFormat("{0} {1}行{2}列目: 変換に失敗しました: {3}=\"{4}\"",setting.className,line,j + 1,info.Name,sValue);
+                            sValue = "\"" + sValue + "\"";
+                        }
+
+                        if(sValue == "")
+                        {
+                            Debug.LogWarningFormat("{0} {1}行{2}列目: 空の値があります: {3}=\"{4}\"",setting.className,line,j + 1,info.Name,sValue);
+                        }
+                        else
+                        {
+                            value = Str2TypeConverter.Convert(fieldType,sValue);
+
+                            if(value == null)
+                            {
+                                Debug.LogWarningFormat("{0} {1}行{2}列目: 変換に失敗しました: {3}=\"{4}\"",setting.className,line,j + 1,info.Name,sValue);
+                            }
                         }
                     }
 
                     // フィールド名が配列要素の場合
                     // もともとの配列データを読み込んで、そこに value を追加した配列を value とする.
                     // TODO 添字を反映させる.
-                    if(fields[j].fieldName.Contains("["))
+                    if(fields[j].isArrayField)
                     {
                         var t = ((IEnumerable)info.GetValue(data));
 

@@ -111,12 +111,7 @@ namespace CsvConverter {
 
                 // フィールド名が配列表の場合は [] の部分を削除する
                 // 例) names[2] => names
-                string fieldName = fields[j].fieldName;
-                if(fieldName.Contains("["))
-                {
-                    fieldName = fieldName.Remove(fieldName.LastIndexOf("["));
-                }
-
+                string fieldName = fields[j].fieldNameWithoutIndexing;
                 FieldInfo info = assetType.GetField(fieldName);
 
                 if(info == null)
