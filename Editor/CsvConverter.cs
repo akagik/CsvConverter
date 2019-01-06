@@ -1,8 +1,10 @@
+using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using System.Linq;
 
 namespace CsvConverter {
     public class CsvConverter {
@@ -76,6 +78,7 @@ namespace CsvConverter {
                 return;
             }
 
+            // csv ファイルから読み込み
             var cell = CsvParser.ReadAsList(textAsset.text);
 
             CsvData csv = new CsvData();
@@ -86,7 +89,62 @@ namespace CsvConverter {
 
             Field[] fields = GetFieldsFromHeader(headers);
 
-            bool success = AssetsGenerator.CreateCsvAssets(s, fields, contents);
+
+            // アセットを生成する.
+            AssetsGenerator assetsGenerator = new AssetsGenerator(s);
+
+            // 生成する各要素の class type を取得
+            Type assetType = GetTypeByName(s.className);
+            if(assetType == null)
+            {
+                EditorUtility.DisplayDialog("Error","Cannot find the class \"" + s.className + "\", please execute \"Tools/CsvConverter/Generate Code\".","ok");
+                return;
+            }
+
+            // class のフィールド名と一致しないものは除外する.
+            for(int j = 0; j < fields.Length; j++)
+            {
+                if(!fields[j].isValid)
+                {
+                    continue;
+                }
+
+                // フィールド名が配列表の場合は [] の部分を削除する
+                // 例) names[2] => names
+                string fieldName = fields[j].fieldName;
+                if(fieldName.Contains("["))
+                {
+                    fieldName = fieldName.Remove(fieldName.LastIndexOf("["));
+                }
+
+                FieldInfo info = assetType.GetField(fieldName);
+
+                if(info == null)
+                {
+                    Debug.LogWarningFormat("{0} に存在しないフィールド \"{1}\" を無視",s.className,fieldName);
+                    fields[j].isValid = false;
+                }
+            }
+
+            // テーブルを生成する場合は、生成するテーブル class type を取得
+            Type tableType = null;
+            if (s.tableGenerate) {
+                tableType = GetTypeByName(s.tableClassName);
+                if(tableType == null)
+                {
+                    EditorUtility.DisplayDialog("Error","Cannot find the class \"" + s.tableClassName + "\", please execute \"Tools/CsvConverter/Generate Code\".","ok");
+                    return;
+                }
+            }
+
+            if (s.tableGenerate) {
+                assetsGenerator.Setup(assetType, tableType);
+            }
+            else {
+                assetsGenerator.Setup(assetType);
+            }
+
+            bool success = assetsGenerator.CreateCsvAssets(fields, contents);
 
             if (!success) {
                 return;
@@ -127,6 +185,20 @@ namespace CsvConverter {
             }
 
             return fields;
+        }
+
+        public static Type GetTypeByName(string name)
+        {
+            foreach(Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                foreach(Type type in assembly.GetTypes())
+                {
+                    if(type.Name == name)
+                        return type;
+                }
+            }
+
+            return null;
         }
 
         public static CsvConverterSettings[] GetSettings() {

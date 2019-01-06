@@ -9,80 +9,56 @@ using System.Reflection;
 
 namespace CsvConverter
 {
-    public static class AssetsGenerator
+    public class AssetsGenerator
     {
-        public static bool CreateCsvAssets(CsvConverterSettings.Setting setting,Field[] fields,CsvData content)
+        private CsvConverterSettings.Setting setting;
+        private Type assetType;
+        private string dstFolder;
+
+        // テーブル情報
+        // これらの情報は setting.tableGenerate が true のときのみ利用される.
+        private Type tableType;
+        private ScriptableObject tableInstance;
+        private object dataList = null;
+
+        public AssetsGenerator(CsvConverterSettings.Setting _setting) {
+            setting = _setting;
+        }
+
+        public void Setup(Type _assetType) {
+            assetType = _assetType;
+            dstFolder = Path.Combine("Assets",setting.destination);
+        }
+
+        // テーブルありの設定
+        public void Setup(Type _assetType, Type _tableType) {
+            tableType = _tableType;
+            Setup(_assetType);
+
+            FieldInfo dataListField = tableType.GetField(ClassGenerator.ROWS);
+
+            // 既存のテーブルインスタンスがストレージにあればロードし、なければ新規に作成する.
+            string filePath = Path.Combine(dstFolder,setting.tableAssetName + ".asset");
+            tableInstance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(filePath);
+            if(tableInstance == null)
+            {
+                tableInstance = ScriptableObject.CreateInstance(tableType);
+                AssetDatabase.CreateAsset(tableInstance,filePath);
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            dataList = dataListField.GetValue(tableInstance);
+            dataList.GetType().GetMethod("Clear").Invoke(dataList,null);
+        }
+
+        public bool CreateCsvAssets(Field[] fields,CsvData content)
         {
-            Type assetType = GetTypeByName(setting.className);
-            if(assetType == null)
-            {
-                EditorUtility.DisplayDialog("Error","Cannot find the class \"" + setting.className + "\", please execute \"Tools/CsvConverter/Generate Code\".","ok");
-                return false;
-            }
-
-            // class のフィールド名と一致しないものは除外する.
-            for(int j = 0; j < fields.Length; j++)
-            {
-                if(!fields[j].isValid)
-                {
-                    continue;
-                }
-
-                string fieldName = fields[j].fieldName;
-                if(fieldName.Contains("["))
-                {
-                    fieldName = fieldName.Remove(fieldName.LastIndexOf("["));
-                }
-
-                FieldInfo info = assetType.GetField(fieldName);
-
-                if(info == null)
-                {
-                    Debug.LogWarningFormat("{0} に存在しないフィールド \"{1}\" を無視",setting.className,fieldName);
-                    fields[j].isValid = false;
-                }
-            }
-
-            string folder = Path.Combine("Assets",setting.destination);
-
-            // table の設定
-            ScriptableObject table = null;
-            Type tableType = null;
-
-            FieldInfo dataListField = null;
-            object dataList = null;
-
-            if(setting.tableGenerate)
-            {
-                tableType = GetTypeByName(setting.tableClassName);
-                if(tableType == null)
-                {
-                    EditorUtility.DisplayDialog("Error","Cannot find the class \"" + setting.tableClassName + "\", please execute \"Tools/CsvConverter/Generate Code\".","ok");
-                    return false;
-                }
-
-                dataListField = tableType.GetField(ClassGenerator.ROWS);
-
-                string filePath = Path.Combine(folder,setting.tableAssetName + ".asset");
-
-                table = AssetDatabase.LoadAssetAtPath<ScriptableObject>(filePath);
-                if(table == null)
-                {
-                    table = ScriptableObject.CreateInstance(tableType);
-                    AssetDatabase.CreateAsset(table,filePath);
-                }
-
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
-
-                dataList = dataListField.GetValue(table);
-                dataList.GetType().GetMethod("Clear").Invoke(dataList,null);
-            }
-
-
             // Asset の名前をつけるときに利用する key.
             int[] keyIndexes = ClassGenerator.FindKeyIndexes(setting,fields);
 
+            // 各行に対してアセットを生成する.
             for(int i = 0; i < content.row; i++)
             {
                 int line = i + 2 + 1;
@@ -111,7 +87,7 @@ namespace CsvConverter
                     fileName += ".asset";
                 }
 
-                string filePath = Path.Combine(folder,fileName);
+                string filePath = Path.Combine(dstFolder,fileName);
 
                 object data = null;
 
@@ -238,27 +214,13 @@ namespace CsvConverter
 
             if(setting.tableGenerate)
             {
-                EditorUtility.SetDirty(table);
-                Debug.LogFormat("Create \"{0}\"", Path.Combine(folder,setting.tableAssetName + ".asset"));
+                EditorUtility.SetDirty(tableInstance);
+                Debug.LogFormat("Create \"{0}\"", Path.Combine(dstFolder,setting.tableAssetName + ".asset"));
             }
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             return true;
-        }
-
-        public static Type GetTypeByName(string name)
-        {
-            foreach(Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                foreach(Type type in assembly.GetTypes())
-                {
-                    if(type.Name == name)
-                        return type;
-                }
-            }
-
-            return null;
         }
 
         private static void show_progress(string name,float progress,int i,int total)
