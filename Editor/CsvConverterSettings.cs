@@ -3,6 +3,7 @@ using System.IO;
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
+using System.Collections.Generic;
 
 
 #if ODIN_INSPECTOR
@@ -98,6 +99,9 @@ namespace CsvConverter {
 
             public string[] keys {
                 get {
+                    if (key == null || key.Length == 0) {
+                        return new string[0];
+                    }
                     return key.Split(',').Select((arg) => arg.Trim()).Where((arg) => arg.Length > 0).ToArray();
                 }
             }
@@ -120,8 +124,8 @@ namespace CsvConverter {
                 }
 
                 // クラスが生成されていない場合も Asset を生成できない
-                Type assetType = CsvConverter.GetTypeByName(className);
-                if (assetType == null) {
+                List<Type> assetTypes = CsvConverter.GetTypeByName(className);
+                if (assetTypes.Count == 0) {
                     canCreateAsset = false;
                 }
                 else {

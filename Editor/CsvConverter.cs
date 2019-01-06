@@ -94,10 +94,9 @@ namespace CsvConverter {
             AssetsGenerator assetsGenerator = new AssetsGenerator(s, fields, contents);
 
             // 生成する各要素の class type を取得
-            Type assetType = GetTypeByName(s.className);
-            if(assetType == null)
+            Type assetType;
+            if(!TryGetTypeWithError(s.className, out assetType))
             {
-                EditorUtility.DisplayDialog("Error","Cannot find the class \"" + s.className + "\", please execute \"Tools/CsvConverter/Generate Code\".","ok");
                 return;
             }
 
@@ -124,10 +123,8 @@ namespace CsvConverter {
             // テーブルを生成する場合は、生成するテーブル class type を取得
             Type tableType = null;
             if (s.tableGenerate) {
-                tableType = GetTypeByName(s.tableClassName);
-                if(tableType == null)
+                if(!TryGetTypeWithError(s.tableClassName, out tableType))
                 {
-                    EditorUtility.DisplayDialog("Error","Cannot find the class \"" + s.tableClassName + "\", please execute \"Tools/CsvConverter/Generate Code\".","ok");
                     return;
                 }
             }
@@ -185,18 +182,45 @@ namespace CsvConverter {
             return fields;
         }
 
-        public static Type GetTypeByName(string name)
+        public static bool TryGetTypeWithError(string name, out Type type) {
+            List<Type> candidates = GetTypeByName(name);
+            type = null;
+
+            if (candidates.Count == 0) {
+                EditorUtility.DisplayDialog(
+                    "Error",
+                    "Cannot find the class \"" + name + "\", please execute \"Tools/CsvConverter/Generate Code\".",
+                    "ok"
+                );
+                return false;
+            }
+            if (candidates.Count > 1) {
+                EditorUtility.DisplayDialog(
+                    "Error",
+                    "複数候補の class が発見されました: \"" + name + "\".",
+                    "ok"
+                );
+                return false;
+            }
+            type = candidates[0];
+            return true;
+        }
+
+        public static List<Type> GetTypeByName(string name)
         {
+            List<Type> candidates = new List<Type>();
+
             foreach(Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 foreach(Type type in assembly.GetTypes())
                 {
-                    if(type.Name == name)
-                        return type;
+                    if(type.Name == name) {
+                        candidates.Add(type);
+                    }
                 }
             }
 
-            return null;
+            return candidates;
         }
 
         public static CsvConverterSettings[] GetSettings() {
