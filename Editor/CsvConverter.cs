@@ -146,8 +146,11 @@ namespace CsvConverter {
 
             bool success = assetsGenerator.CreateCsvAssets();
 
-            if (!success) {
-                return;
+            if (success) {
+                Debug.LogFormat("生成された総行数: {0}", assetsGenerator.createdRowCount);
+            }
+            else {
+                Debug.LogError("Fails to create asset");
             }
         }
 

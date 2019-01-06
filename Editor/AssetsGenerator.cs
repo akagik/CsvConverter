@@ -26,10 +26,15 @@ namespace CsvConverter
         private ScriptableObject tableInstance;
         private object dataList = null;
 
+        // ログ情報
+        public int createdRowCount;
+
         public AssetsGenerator(CsvConverterSettings.Setting _setting, Field[] _fields, CsvData _content) {
             setting = _setting;
             fields = _fields;
             content = _content;
+
+            createdRowCount = 0;
         }
 
         public void Setup(Type _assetType) {
@@ -239,6 +244,8 @@ namespace CsvConverter
                 }
 
                 show_progress(setting.className,(float)i / content.row,i,content.row);
+
+                createdRowCount++;
             }
 
             if(setting.tableGenerate)
