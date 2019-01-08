@@ -5,9 +5,14 @@ using UnityEditor;
 namespace CsvConverter {
 
     public class CsvConverterWindow : EditorWindow {
+        public static string SETTINGS_KEY = "CsvConverter/settings";
+
         public CsvConverterSettings settings;
         private bool isDownloading;
         private Vector2 scrollPosition;
+
+        // 二重に保存しないようにするために導入
+        private string savedGUID;
 
         [MenuItem("Window/CsvConverter", false, 0)]
         static public void OpenWindow() {
@@ -15,10 +20,15 @@ namespace CsvConverter {
         }
 
         void OnEnable() {
-            var settingsList = CsvConverter.GetSettings();
+            string guid = EditorUserSettings.GetConfigValue(SETTINGS_KEY);
+            string path = AssetDatabase.GUIDToAssetPath(guid);
 
-            if (settingsList.Length > 0) {
-                settings = settingsList[0];
+            if (path != "") {
+                // Debug.Log("Found prefs settings GUID: " + EditorPrefs.GetString(SETTINGS_KEY));
+                settings = AssetDatabase.LoadAssetAtPath<CsvConverterSettings>(path);
+            }
+            else {
+                // Debug.Log("Not Found GUID");
             }
         }
 
@@ -28,60 +38,76 @@ namespace CsvConverter {
 
             scrollPosition = GUILayout.BeginScrollView(scrollPosition);
 
-            for (int i = 0; i < settings.list.Length; i++) {
-                var s = settings.list[i];
+            if (settings != null) {
+                // セットされている settings 情報を EditorUserSettings に保存する.
+                {
+                    string guid;
+                    int localId;
+
+                    if(AssetDatabase.TryGetGUIDAndLocalFileIdentifier(settings, out guid, out localId)) {
+                        if (savedGUID != guid) {
+                            // Debug.Log("Save GUID(" + guid + ") at " + SETTINGS_KEY);
+                            EditorPrefs.SetString(SETTINGS_KEY, guid);
+                            EditorUserSettings.SetConfigValue(SETTINGS_KEY, guid);
+                            savedGUID = guid;
+                        }
+                    }
+                }
+
+                for (int i = 0; i < settings.list.Length; i++) {
+                    var s = settings.list[i];
+
+                    GUILayout.BeginHorizontal("box");
+
+                    if (s.tableGenerate) {
+                        GUILayout.Label(s.tableAssetName);
+                    }
+                    else {
+                        GUILayout.Label(s.className);
+                    }
+
+                    GUI.enabled = s.canGenerateCode;
+                    if (GUILayout.Button("Generate Code", GUILayout.Width(110)) && !isDownloading) {
+                        isDownloading = true;
+                        GenerateOneCode(s);
+                        isDownloading = false;
+
+                        GUIUtility.ExitGUI();
+                    }
+
+                    GUI.enabled = s.canCreateAsset;
+
+                    if (GUILayout.Button("Create Assets", GUILayout.Width(110)) && !isDownloading) {
+                        isDownloading = true;
+                        CreateOneAssets(s);
+                        isDownloading = false;
+
+                        GUIUtility.ExitGUI();
+                    }
+
+                    GUI.enabled = true;
+                    GUILayout.EndHorizontal();
+                }
 
                 GUILayout.BeginHorizontal("box");
-
-                if (s.tableGenerate) {
-                    GUILayout.Label(s.tableAssetName);
-                }
-                else {
-                    GUILayout.Label(s.className);
-                }
-
-                GUI.enabled = s.canGenerateCode;
-                if (GUILayout.Button("Generate Code", GUILayout.Width(110)) && !isDownloading) {
+                if (GUILayout.Button("Generate All Codes", "LargeButtonMid") && !isDownloading) {
                     isDownloading = true;
-                    GenerateOneCode(s);
+                    GenerateAllCode(settings);
                     isDownloading = false;
 
                     GUIUtility.ExitGUI();
                 }
-
-                GUI.enabled = s.canCreateAsset;
-
-                if (GUILayout.Button("Create Assets", GUILayout.Width(110)) && !isDownloading) {
+                if (GUILayout.Button("Create All Assets", "LargeButtonMid") && !isDownloading) {
                     isDownloading = true;
-                    CreateOneAssets(s);
+                    CreateAllAssets(settings);
                     isDownloading = false;
 
                     GUIUtility.ExitGUI();
                 }
-
-                GUI.enabled = true;
                 GUILayout.EndHorizontal();
             }
 
-            GUILayout.BeginHorizontal("box");
-            if (GUILayout.Button("Generate All Codes", "LargeButtonMid") && !isDownloading) {
-                isDownloading = true;
-                GenerateAllCode(settings);
-                isDownloading = false;
-
-                GUIUtility.ExitGUI();
-            }
-            if (GUILayout.Button("Create All Assets", "LargeButtonMid") && !isDownloading) {
-                isDownloading = true;
-                CreateAllAssets(settings);
-                isDownloading = false;
-
-                GUIUtility.ExitGUI();
-            }
-            GUILayout.EndHorizontal();
-
             GUILayout.EndScrollView();
-
         }
 
         public static void GenerateAllCode(CsvConverterSettings setting) {
