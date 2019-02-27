@@ -4,7 +4,7 @@ CSV から class を生成して、ScriptableObject に変換する.
 
 # Requirements
 Generic の CsvParser が必要:
-`git@github.com:akagik/Generic.git`
+https://github.com/akagik/Generic
 
 ## How to use
 
