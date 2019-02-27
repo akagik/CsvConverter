@@ -117,3 +117,16 @@ public class HumanTable : ScriptableObject
 | 1 | 2 | 4 | 5 |
 | 2 | 1 | 3 | 5 |
 
+
+## Is Enum
+IsEnum にチェックが入っている場合は、テーブルを enum としてパースして enum を生成する.
+この場合 csv のフォーマットが通常と異なり、型を指定する必要がなく、またフィード名は ID, VALUE にする必要がある.
+
+### 実際の例 (direction.csv)
+| ID | VALUE |
+| -- | ----- |
+| Forward | 0 |
+| Right | 1 |
+| Back | 2 |
+| Left | 3 |
+
