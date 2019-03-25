@@ -56,6 +56,39 @@ public static class Str2TypeConverter
                 value = cValue;
             }
         }
+        else if (t == typeof(UnityEngine.GameObject))
+        {
+            if (sValue == "")
+            {
+                return value;
+            }
+            string path = Path.Combine("Assets", sValue);
+            GameObject gameObject = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+
+            // フルパスで見つからない場合はファイル名＋Prefabフィルターで最初に見つかったものを返す.
+            if (gameObject == null)
+            {
+                string[] guids = AssetDatabase.FindAssets("\"" + GetPathWithoutExtension(sValue) + "\" t:Prefab");
+
+                if (guids.Length == 0)
+                {
+                    Debug.LogErrorFormat("Not found gameObject: \"{0}\"", sValue);
+                }
+                if (guids.Length > 1)
+                {
+                    Debug.LogWarningFormat("GameObject \"{0}\" に対して複数のアセットが見つかりました:\n{1}", sValue, string.Join("\n", guids));
+                }
+
+                if (guids.Length > 0) {
+                    path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                    gameObject = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                }
+                else {
+                    gameObject = null;
+                }
+            }
+            value = gameObject;
+        }
         else if (t == typeof(UnityEngine.Sprite))
         {
             if (sValue == "")
