@@ -37,6 +37,7 @@ https://github.com/akagik/Generic
 | double | 2.5 | |
 | long | 9032 | |
 | bool | true | |
+| GameObject | "test.prefab" | (Assets からの)フルパスで見つからない場合はファイル名で検索する. |
 | Sprite | "test.png" | (Assets からの)フルパスで見つからない場合はファイル名で検索する. |
 | Vector2 | (4.5, 9.1) | |
 | Vector3 | (1.0, 2.2, 3.4) | |
