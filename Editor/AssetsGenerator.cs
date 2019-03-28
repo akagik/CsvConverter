@@ -50,7 +50,7 @@ namespace CsvConverter
             tableType = _tableType;
             Setup(_assetType);
 
-            FieldInfo dataListField = tableType.GetField(ClassGenerator.ROWS);
+            FieldInfo dataListField = tableType.GetField(ClassGenerator.ROWS, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
 
             // 既存のテーブルインスタンスがストレージにあればロードし、なければ新規に作成する.
             string filePath = Path.Combine(dstFolder,setting.tableAssetName + ".asset");

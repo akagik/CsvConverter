@@ -42,7 +42,7 @@ namespace CsvConverter {
                 // セットされている settings 情報を EditorUserSettings に保存する.
                 {
                     string guid;
-                    int localId;
+                    long localId;
 
                     if(AssetDatabase.TryGetGUIDAndLocalFileIdentifier(settings, out guid, out localId)) {
                         if (savedGUID != guid) {
