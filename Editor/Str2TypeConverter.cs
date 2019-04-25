@@ -30,6 +30,25 @@ public static class Str2TypeConverter
             {
                 value = intValue;
             }
+            else {
+                // enum チェックする
+                // 例えば int フィールドとして `KeyCode.Tab` のような値も許容するようにする.
+                string[] splits = sValue.Split('.');
+
+                if (splits.Length == 2) {
+                    string typeName = splits[0];
+                    string enumId = splits[1];
+
+                    List<Type> candidates = CsvConverter.CsvConverter.GetTypeByName(typeName);
+
+                    if (candidates.Count > 2) {
+                        Debug.LogWarningFormat("指定の enum が複数見つかりました", typeName);
+                    }
+                    else if (candidates.Count == 1) {
+                        value = Enum.Parse(candidates[0], enumId);
+                    }
+                }
+            }
         }
         else if (t == typeof(float))
         {
