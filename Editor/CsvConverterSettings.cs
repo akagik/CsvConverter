@@ -90,6 +90,12 @@ namespace CsvConverter {
 #if ODIN_INSPECTOR
             [ToggleGroup("tableGenerate")]
 #endif
+            public bool isDictionary;
+
+
+#if ODIN_INSPECTOR
+            [ToggleGroup("tableGenerate")]
+#endif
             public bool onlyTableCreate;
 
 #if ODIN_INSPECTOR
