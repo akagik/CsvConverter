@@ -30,21 +30,25 @@ public static class Str2TypeConverter
             {
                 value = intValue;
             }
-            else {
+            else
+            {
                 // enum チェックする
                 // 例えば int フィールドとして `KeyCode.Tab` のような値も許容するようにする.
                 string[] splits = sValue.Split('.');
 
-                if (splits.Length == 2) {
+                if (splits.Length == 2)
+                {
                     string typeName = splits[0];
                     string enumId = splits[1];
 
                     List<Type> candidates = CsvConverter.CsvConverter.GetTypeByName(typeName);
 
-                    if (candidates.Count > 2) {
+                    if (candidates.Count > 2)
+                    {
                         Debug.LogWarningFormat("指定の enum が複数見つかりました", typeName);
                     }
-                    else if (candidates.Count == 1) {
+                    else if (candidates.Count == 1)
+                    {
                         value = Enum.Parse(candidates[0], enumId);
                     }
                 }
@@ -57,17 +61,24 @@ public static class Str2TypeConverter
             {
                 value = floatValue;
             }
-        } else if (t == typeof(double)) {
+        }
+        else if (t == typeof(double))
+        {
             double doubleValue;
-            if (double.TryParse(sValue, out doubleValue)) {
+            if (double.TryParse(sValue, out doubleValue))
+            {
                 value = doubleValue;
             }
-        } else if (t == typeof(long)) {
+        }
+        else if (t == typeof(long))
+        {
             long longValue;
-            if (long.TryParse(sValue, out longValue)) {
+            if (long.TryParse(sValue, out longValue))
+            {
                 value = longValue;
             }
-        } else if (t == typeof(bool))
+        }
+        else if (t == typeof(bool))
         {
             bool cValue;
             if (bool.TryParse(sValue, out cValue))
@@ -81,6 +92,7 @@ public static class Str2TypeConverter
             {
                 return value;
             }
+
             string path = Path.Combine("Assets", sValue);
             GameObject gameObject = AssetDatabase.LoadAssetAtPath<GameObject>(path);
 
@@ -93,19 +105,24 @@ public static class Str2TypeConverter
                 {
                     Debug.LogErrorFormat("Not found gameObject: \"{0}\"", sValue);
                 }
+
                 if (guids.Length > 1)
                 {
-                    Debug.LogWarningFormat("GameObject \"{0}\" に対して複数のアセットが見つかりました:\n{1}", sValue, string.Join("\n", guids));
+                    Debug.LogWarningFormat("GameObject \"{0}\" に対して複数のアセットが見つかりました:\n{1}", sValue,
+                        string.Join("\n", guids));
                 }
 
-                if (guids.Length > 0) {
+                if (guids.Length > 0)
+                {
                     path = AssetDatabase.GUIDToAssetPath(guids[0]);
                     gameObject = AssetDatabase.LoadAssetAtPath<GameObject>(path);
                 }
-                else {
+                else
+                {
                     gameObject = null;
                 }
             }
+
             value = gameObject;
         }
         else if (t == typeof(UnityEngine.Sprite))
@@ -114,6 +131,7 @@ public static class Str2TypeConverter
             {
                 return value;
             }
+
             string path = Path.Combine("Assets", sValue);
             Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
 
@@ -126,19 +144,24 @@ public static class Str2TypeConverter
                 {
                     Debug.LogErrorFormat("Not found sprite: \"{0}\"", sValue);
                 }
+
                 if (guids.Length > 1)
                 {
-                    Debug.LogWarningFormat("Sprite \"{0}\" に対して複数のアセットが見つかりました:\n{1}", sValue, string.Join("\n", guids));
+                    Debug.LogWarningFormat("Sprite \"{0}\" に対して複数のアセットが見つかりました:\n{1}", sValue,
+                        string.Join("\n", guids));
                 }
 
-                if (guids.Length > 0) {
+                if (guids.Length > 0)
+                {
                     path = AssetDatabase.GUIDToAssetPath(guids[0]);
                     sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
                 }
-                else {
+                else
+                {
                     sprite = null;
                 }
             }
+
             value = sprite;
         }
         else if (t == typeof(string))
@@ -168,7 +191,8 @@ public static class Str2TypeConverter
                 {
                     return null;
                 }
-                vector[i] = (float)elem;
+
+                vector[i] = (float) elem;
             }
 
             value = vector;
@@ -196,7 +220,8 @@ public static class Str2TypeConverter
                 {
                     return null;
                 }
-                vector[i] = (float)elem;
+
+                vector[i] = (float) elem;
             }
 
             value = vector;
@@ -232,9 +257,10 @@ public static class Str2TypeConverter
                 {
                     return null;
                 }
+
                 //objects.GetType().
                 //objects.Add((int)elem);
-                objects.GetType().GetMethod("Add").Invoke(objects, new object[] { elem });
+                objects.GetType().GetMethod("Add").Invoke(objects, new object[] {elem});
             }
 
             //value = System.Convert.ChangeType(objects.ToArray(), t);
@@ -266,6 +292,7 @@ public static class Str2TypeConverter
         {
             return path;
         }
+
         return path.Replace(extension, string.Empty);
     }
 }

@@ -109,6 +109,5 @@ namespace CsvConverter
 
             return fields;
         }
-
     }
 }

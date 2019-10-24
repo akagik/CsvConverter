@@ -11,18 +11,12 @@ namespace CsvConverter
 
         public int row
         {
-            get
-            {
-                return content.Length;
-            }
+            get { return content.Length; }
         }
 
         public int col
         {
-            get
-            {
-                return content[0].data.Length;
-            }
+            get { return content[0].data.Length; }
         }
 
         [Serializable]
@@ -36,11 +30,13 @@ namespace CsvConverter
             }
         }
 
-        public CsvData() {
+        public CsvData()
+        {
             this.content = new Row[0];
         }
 
-        public CsvData(Row[] rows) {
+        public CsvData(Row[] rows)
+        {
             this.content = rows;
         }
 
@@ -48,17 +44,21 @@ namespace CsvConverter
         {
             int n = content.Length;
 
-            if (endIndex > n) {
+            if (endIndex > n)
+            {
                 endIndex = n;
             }
-            else if (endIndex <= - n) {
+            else if (endIndex <= -n)
+            {
                 return new CsvData();
             }
-            else {
+            else
+            {
                 endIndex = (endIndex % n + n) % n;
             }
 
-            if (startIndex >= endIndex) {
+            if (startIndex >= endIndex)
+            {
                 return new CsvData();
             }
 
@@ -84,6 +84,7 @@ namespace CsvConverter
             {
                 rows[i] = new Row(col);
             }
+
             return rows;
         }
 
@@ -127,6 +128,7 @@ namespace CsvConverter
                 {
                     s += "\"" + Get(i, j) + "\", ";
                 }
+
                 s = s.Substring(0, s.Length - 2);
                 s += "\n";
             }
@@ -134,5 +136,4 @@ namespace CsvConverter
             return s;
         }
     }
-
 }
