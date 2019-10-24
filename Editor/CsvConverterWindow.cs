@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 namespace CsvConverter
 {
@@ -14,6 +16,16 @@ namespace CsvConverter
 
         // 二重に保存しないようにするために導入
         private string savedGUID;
+
+        // 検索ボックス用
+        private static GUIStyle toolbarSearchField;
+        private static GUIStyle toolbarSearchFieldCancelButton;
+        private static GUIStyle toolbarSearchFieldCancelButtonEmpty;
+        private string searchTxt = "";
+
+        // チェックボックス用
+        private bool isAll = true;
+        CsvConverterSettings.Setting[] cachedAllSettings;
 
         [MenuItem("Window/CsvConverter", false, 0)]
         static public void OpenWindow()
@@ -37,16 +49,49 @@ namespace CsvConverter
             }
         }
 
+        void OnFocus()
+        {
+            // isAll用のデータをキャッシュ
+            var allSettingList = new List<CsvConverterSettings.Setting>();
+            string[] settingGUIDArray = AssetDatabase.FindAssets("t:CsvConverterSettings");
+            for (int i = 0; i < settingGUIDArray.Length; i++)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(settingGUIDArray[i]);
+                allSettingList.AddRange(AssetDatabase.LoadAssetAtPath<CsvConverterSettings>(assetPath).list);
+            }
+
+            cachedAllSettings = allSettingList.ToArray();
+        }
+
         private void OnGUI()
         {
             GUILayout.Space(6f);
-            settings =
-                EditorGUILayout.ObjectField("Settings", settings, typeof(CsvConverterSettings), false) as
-                    CsvConverterSettings;
+            isAll = EditorGUILayout.Toggle("AllSettings", isAll);
+            CsvConverterSettings.Setting[] setting = null;
+            if (isAll)
+            {
+                if (cachedAllSettings != null)
+                {
+                    setting = cachedAllSettings;
+                }
+            }
+            else
+            {
+                settings =
+                    EditorGUILayout.ObjectField("Settings", settings, typeof(CsvConverterSettings), false) as
+                        CsvConverterSettings;
+                setting = settings.list;
+            }
+
+            // 検索ボックスを表示
+            GUILayout.BeginHorizontal();
+            searchTxt = SearchField(searchTxt);
+            searchTxt = searchTxt.ToLower();
+            GUILayout.EndHorizontal();
 
             scrollPosition = GUILayout.BeginScrollView(scrollPosition);
 
-            if (settings != null)
+            if (settings != null && setting != null)
             {
                 // セットされている settings 情報を EditorUserSettings に保存する.
                 {
@@ -65,9 +110,34 @@ namespace CsvConverter
                     }
                 }
 
-                for (int i = 0; i < settings.list.Length; i++)
+                for (int i = 0; i < setting.Length; i++)
                 {
-                    var s = settings.list[i];
+                    var s = setting[i];
+
+                    // 設定が削除されている場合などに対応
+                    if (s == null)
+                    {
+                        continue;
+                    }
+
+                    // 検索ワードチェック
+                    if (!string.IsNullOrEmpty(searchTxt))
+                    {
+                        if (s.tableGenerate)
+                        {
+                            if (!searchTxt.IsSubsequence(s.tableAssetName.ToLower()))
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            if (!searchTxt.IsSubsequence(s.className.ToLower()))
+                            {
+                                continue;
+                            }
+                        }
+                    }
 
                     GUILayout.BeginHorizontal("box");
 
@@ -105,11 +175,13 @@ namespace CsvConverter
                     GUILayout.EndHorizontal();
                 }
 
+                GUILayout.EndScrollView();
+
                 GUILayout.BeginHorizontal("box");
                 if (GUILayout.Button("Generate All Codes", "LargeButtonMid") && !isDownloading)
                 {
                     isDownloading = true;
-                    GenerateAllCode(settings);
+                    GenerateAllCode(setting);
                     isDownloading = false;
 
                     GUIUtility.ExitGUI();
@@ -118,7 +190,7 @@ namespace CsvConverter
                 if (GUILayout.Button("Create All Assets", "LargeButtonMid") && !isDownloading)
                 {
                     isDownloading = true;
-                    CreateAllAssets(settings);
+                    CreateAllAssets(setting);
                     isDownloading = false;
 
                     GUIUtility.ExitGUI();
@@ -126,22 +198,20 @@ namespace CsvConverter
 
                 GUILayout.EndHorizontal();
             }
-
-            GUILayout.EndScrollView();
         }
 
-        public static void GenerateAllCode(CsvConverterSettings setting)
+        public static void GenerateAllCode(CsvConverterSettings.Setting[] setting)
         {
             int i = 0;
 
             try
             {
-                foreach (CsvConverterSettings.Setting s in setting.list)
+                foreach (CsvConverterSettings.Setting s in setting)
                 {
-                    show_progress(s.className, (float) i / setting.list.Length, i, setting.list.Length);
+                    show_progress(s.className, (float) i / setting.Length, i, setting.Length);
                     CsvConverter.GenerateCode(s);
                     i++;
-                    show_progress(s.className, (float) i / setting.list.Length, i, setting.list.Length);
+                    show_progress(s.className, (float) i / setting.Length, i, setting.Length);
                 }
             }
             catch (Exception e)
@@ -154,11 +224,11 @@ namespace CsvConverter
             EditorUtility.ClearProgressBar();
         }
 
-        public static void CreateAllAssets(CsvConverterSettings setting)
+        public static void CreateAllAssets(CsvConverterSettings.Setting[] setting)
         {
             try
             {
-                foreach (CsvConverterSettings.Setting s in setting.list)
+                foreach (CsvConverterSettings.Setting s in setting)
                 {
                     CsvConverter.CreateAssets(s);
                 }
@@ -217,6 +287,73 @@ namespace CsvConverter
         private static string progress_msg(string name, int i, int total)
         {
             return string.Format("Creating {0} ({1}/{2})", name, i, total);
+        }
+
+        private static string SearchField(string text)
+        {
+            Rect rect = GUILayoutUtility.GetRect(16f, 24f, 16f, 24f, new GUILayoutOption[]
+            {
+                GUILayout.Width(400f), // 検索ボックスのサイズ
+            });
+            rect.x += 4f;
+            rect.y += 4f;
+
+            return (string) ToolbarSearchField(rect, text);
+        }
+
+        private static string ToolbarSearchField(Rect position, string text)
+        {
+            Rect rect = position;
+            rect.x += position.width;
+            rect.width = 14f;
+
+            if (toolbarSearchField == null)
+            {
+                toolbarSearchField = GetStyle("ToolbarSeachTextField");
+            }
+
+            text = EditorGUI.TextField(position, text, toolbarSearchField);
+            if (text == "")
+            {
+                if (toolbarSearchFieldCancelButtonEmpty == null)
+                {
+                    toolbarSearchFieldCancelButtonEmpty = GetStyle("ToolbarSeachCancelButtonEmpty");
+                }
+
+                GUI.Button(rect, GUIContent.none, toolbarSearchFieldCancelButtonEmpty);
+            }
+            else
+            {
+                if (toolbarSearchFieldCancelButton == null)
+                {
+                    toolbarSearchFieldCancelButton = GetStyle("ToolbarSeachCancelButton");
+                }
+
+                if (GUI.Button(rect, GUIContent.none, toolbarSearchFieldCancelButton))
+                {
+                    text = "";
+                    GUIUtility.keyboardControl = 0;
+                }
+            }
+
+            return text;
+        }
+
+        private static GUIStyle GetStyle(string styleName)
+        {
+            GUIStyle gUIStyle = GUI.skin.FindStyle(styleName);
+            if (gUIStyle == null)
+            {
+                gUIStyle = EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector).FindStyle(styleName);
+            }
+
+            if (gUIStyle == null)
+            {
+                Debug.LogError("Missing built-in guistyle " + styleName);
+                gUIStyle = new GUIStyle();
+            }
+
+            return gUIStyle;
         }
     }
 }
