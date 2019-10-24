@@ -10,7 +10,7 @@ using System.Reflection;
 /// <summary>
 /// 文字列を指定された型のオブジェクトに変換する.
 /// Primitive 型、Sprite, Vector2, Vector3, 配列型
-/// をサポート.
+/// Material, GameObjectをサポート.
 /// </summary>
 public static class Str2TypeConverter
 {
@@ -21,7 +21,6 @@ public static class Str2TypeConverter
         Debug.Log("Convert: #" + sValue + "#");
 #endif
         object value = null;
-
         // 型に応じて string を変換する.
         if (t == typeof(int))
         {
@@ -86,83 +85,17 @@ public static class Str2TypeConverter
                 value = cValue;
             }
         }
-        else if (t == typeof(UnityEngine.GameObject))
+        else if (t == typeof(GameObject))
         {
-            if (sValue == "")
-            {
-                return value;
-            }
-
-            string path = Path.Combine("Assets", sValue);
-            GameObject gameObject = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-
-            // フルパスで見つからない場合はファイル名＋Prefabフィルターで最初に見つかったものを返す.
-            if (gameObject == null)
-            {
-                string[] guids = AssetDatabase.FindAssets("\"" + GetPathWithoutExtension(sValue) + "\" t:Prefab");
-
-                if (guids.Length == 0)
-                {
-                    Debug.LogErrorFormat("Not found gameObject: \"{0}\"", sValue);
-                }
-
-                if (guids.Length > 1)
-                {
-                    Debug.LogWarningFormat("GameObject \"{0}\" に対して複数のアセットが見つかりました:\n{1}", sValue,
-                        string.Join("\n", guids));
-                }
-
-                if (guids.Length > 0)
-                {
-                    path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                    gameObject = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-                }
-                else
-                {
-                    gameObject = null;
-                }
-            }
-
-            value = gameObject;
+            value = LoadAsset<GameObject>(sValue);
         }
-        else if (t == typeof(UnityEngine.Sprite))
+        else if (t == typeof(Sprite))
         {
-            if (sValue == "")
-            {
-                return value;
-            }
-
-            string path = Path.Combine("Assets", sValue);
-            Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
-
-            // フルパスで見つからない場合はファイル名＋Spriteフィルターで最初に見つかったものを返す.
-            if (sprite == null)
-            {
-                string[] guids = AssetDatabase.FindAssets("\"" + GetPathWithoutExtension(sValue) + "\" t:Sprite");
-
-                if (guids.Length == 0)
-                {
-                    Debug.LogErrorFormat("Not found sprite: \"{0}\"", sValue);
-                }
-
-                if (guids.Length > 1)
-                {
-                    Debug.LogWarningFormat("Sprite \"{0}\" に対して複数のアセットが見つかりました:\n{1}", sValue,
-                        string.Join("\n", guids));
-                }
-
-                if (guids.Length > 0)
-                {
-                    path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                    sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
-                }
-                else
-                {
-                    sprite = null;
-                }
-            }
-
-            value = sprite;
+            value = LoadAsset<Sprite>(sValue);
+        }
+        else if (t == typeof(Material))
+        {
+            value = LoadAsset<Material>(sValue);
         }
         else if (t == typeof(string))
         {
@@ -294,5 +227,45 @@ public static class Str2TypeConverter
         }
 
         return path.Replace(extension, string.Empty);
+    }
+
+    private static object LoadAsset<T>(string sValue) where T : UnityEngine.Object
+    {
+        if (sValue == "")
+        {
+            return null;
+        }
+
+        string path = Path.Combine("Assets", sValue);
+        var asset = AssetDatabase.LoadAssetAtPath<T>(path);
+        // フルパスで見つからない場合はファイル名＋指定フィルターで最初に見つかったものを返す.
+        if (asset == null)
+        {
+            string targetType = typeof(T).Name;
+            string[] guids = AssetDatabase.FindAssets("\"" + GetPathWithoutExtension(sValue) + "\" t:" + targetType);
+
+            if (guids.Length == 0)
+            {
+                Debug.LogErrorFormat("Not found {0}: \"{1}\"", targetType, sValue);
+            }
+
+            if (guids.Length > 1)
+            {
+                Debug.LogWarningFormat("{0} \"{1}\" に対して複数のアセットが見つかりました:\n{2}", targetType, sValue,
+                    string.Join("\n", guids));
+            }
+
+            if (guids.Length > 0)
+            {
+                path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                asset = AssetDatabase.LoadAssetAtPath<T>(path);
+            }
+            else
+            {
+                asset = null;
+            }
+        }
+
+        return asset;
     }
 }
