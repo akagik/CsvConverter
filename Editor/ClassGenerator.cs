@@ -37,7 +37,7 @@ namespace CsvConverter
             for (int col = 0; col < fields.Length; col++)
             {
                 Field f = fields[col];
-                if (addedFields.Contains(f.fieldNameWithoutIndexing)) break;
+                if (addedFields.Contains(f.fieldNameWithoutIndexing)) continue;
 
                 string fieldName = f.fieldName;
                 string typeName = f.typeName;
