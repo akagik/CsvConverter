@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using System.Linq;
 
 namespace CsvConverter
 {
@@ -24,6 +25,7 @@ namespace CsvConverter
         // チェックボックス用
         private bool isAll = true;
         CsvConverterSettings.Setting[] cachedAllSettings;
+        private string[] cachedAllSettingsPath;
 
         [MenuItem("Window/CsvConverter", false, 0)]
         static public void OpenWindow()
@@ -51,14 +53,21 @@ namespace CsvConverter
         {
             // isAll用のデータをキャッシュ
             var allSettingList = new List<CsvConverterSettings.Setting>();
+            var allSettingPathList = new List<string>();
+            
             string[] settingGUIDArray = AssetDatabase.FindAssets("t:CsvConverterSettings");
             for (int i = 0; i < settingGUIDArray.Length; i++)
             {
                 string assetPath = AssetDatabase.GUIDToAssetPath(settingGUIDArray[i]);
-                allSettingList.AddRange(AssetDatabase.LoadAssetAtPath<CsvConverterSettings>(assetPath).list);
+                var settings = AssetDatabase.LoadAssetAtPath<CsvConverterSettings>(assetPath);
+                allSettingList.AddRange(settings.list);
+
+                string settingPath = Path.GetDirectoryName(assetPath);
+                allSettingPathList.AddRange(Enumerable.Repeat(settingPath, settings.list.Length));
             }
 
             cachedAllSettings = allSettingList.ToArray();
+            cachedAllSettingsPath = allSettingPathList.ToArray();
         }
 
         private void OnGUI()
@@ -66,11 +75,14 @@ namespace CsvConverter
             GUILayout.Space(6f);
             isAll = EditorGUILayout.Toggle("AllSettings", isAll);
             CsvConverterSettings.Setting[] setting = null;
+            string[] paths = null;
+            
             if (isAll)
             {
                 if (cachedAllSettings != null)
                 {
                     setting = cachedAllSettings;
+                    paths = cachedAllSettingsPath;
                 }
             }
             else
@@ -79,6 +91,9 @@ namespace CsvConverter
                     EditorGUILayout.ObjectField("Settings", settings, typeof(CsvConverterSettings), false) as
                         CsvConverterSettings;
                 setting = settings.list;
+
+                string settingPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(settings));
+                paths = Enumerable.Repeat(settingPath, setting.Length).ToArray();
             }
 
             // 検索ボックスを表示
@@ -111,6 +126,7 @@ namespace CsvConverter
                 for (int i = 0; i < setting.Length; i++)
                 {
                     var s = setting[i];
+                    var path = paths[i];
 
                     // 設定が削除されている場合などに対応
                     if (s == null)
@@ -153,7 +169,7 @@ namespace CsvConverter
                     {
                         GlobalCCSettings gSettings = CCLogic.GetGlobalSettings();
                         isDownloading = true;
-                        GenerateOneCode(s, gSettings);
+                        GenerateOneCode(s, gSettings, path);
                         isDownloading = false;
 
                         GUIUtility.ExitGUI();
@@ -165,7 +181,7 @@ namespace CsvConverter
                     {
                         GlobalCCSettings gSettings = CCLogic.GetGlobalSettings();
                         isDownloading = true;
-                        CreateOneAssets(s, gSettings);
+                        CreateOneAssets(s, gSettings, path);
                         isDownloading = false;
 
                         GUIUtility.ExitGUI();
@@ -182,7 +198,7 @@ namespace CsvConverter
                 {
                     GlobalCCSettings gSettings = CCLogic.GetGlobalSettings();
                     isDownloading = true;
-                    GenerateAllCode(setting, gSettings);
+                    GenerateAllCode(setting, gSettings, paths);
                     isDownloading = false;
 
                     GUIUtility.ExitGUI();
@@ -192,7 +208,7 @@ namespace CsvConverter
                 {
                     GlobalCCSettings gSettings = CCLogic.GetGlobalSettings();
                     isDownloading = true;
-                    CreateAllAssets(setting, gSettings);
+                    CreateAllAssets(setting, gSettings, paths);
                     isDownloading = false;
 
                     GUIUtility.ExitGUI();
@@ -202,7 +218,7 @@ namespace CsvConverter
             }
         }
 
-        public static void GenerateAllCode(CsvConverterSettings.Setting[] setting, GlobalCCSettings gSettings)
+        public static void GenerateAllCode(CsvConverterSettings.Setting[] setting, GlobalCCSettings gSettings, string[] settingPaths)
         {
             int i = 0;
 
@@ -211,7 +227,7 @@ namespace CsvConverter
                 foreach (CsvConverterSettings.Setting s in setting)
                 {
                     show_progress(s.className, (float) i / setting.Length, i, setting.Length);
-                    CsvConverter.GenerateCode(s, gSettings);
+                    CsvConverter.GenerateCode(s, gSettings, settingPaths[i]);
                     i++;
                     show_progress(s.className, (float) i / setting.Length, i, setting.Length);
                 }
@@ -226,13 +242,13 @@ namespace CsvConverter
             EditorUtility.ClearProgressBar();
         }
 
-        public static void CreateAllAssets(CsvConverterSettings.Setting[] setting, GlobalCCSettings gSettings)
+        public static void CreateAllAssets(CsvConverterSettings.Setting[] setting, GlobalCCSettings gSettings, string[] settingPaths)
         {
             try
             {
-                foreach (CsvConverterSettings.Setting s in setting)
+                for (int i = 0; i < setting.Length; i++)
                 {
-                    CsvConverter.CreateAssets(s, gSettings);
+                    CsvConverter.CreateAssets(setting[i], gSettings, settingPaths[i]);
                 }
             }
             catch (Exception e)
@@ -245,13 +261,13 @@ namespace CsvConverter
             EditorUtility.ClearProgressBar();
         }
 
-        public static void GenerateOneCode(CsvConverterSettings.Setting s, GlobalCCSettings gSettings)
+        public static void GenerateOneCode(CsvConverterSettings.Setting s, GlobalCCSettings gSettings, string settingPath)
         {
             show_progress(s.className, 0, 0, 1);
 
             try
             {
-                CsvConverter.GenerateCode(s, gSettings);
+                CsvConverter.GenerateCode(s, gSettings, settingPath);
             }
             catch (Exception e)
             {
@@ -265,11 +281,11 @@ namespace CsvConverter
             EditorUtility.ClearProgressBar();
         }
 
-        public static void CreateOneAssets(CsvConverterSettings.Setting s, GlobalCCSettings gSettings)
+        public static void CreateOneAssets(CsvConverterSettings.Setting s, GlobalCCSettings gSettings, string settingPath)
         {
             try
             {
-                CsvConverter.CreateAssets(s, gSettings);
+                CsvConverter.CreateAssets(s, gSettings, settingPath);
             }
             catch (Exception e)
             {

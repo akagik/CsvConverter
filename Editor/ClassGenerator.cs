@@ -14,7 +14,7 @@ namespace CsvConverter
         const string FIELD_FORMAT = "    public {0} {1};\n";
         public static readonly string ROWS = "rows";
 
-        static public void GenerateClass(string destination, string name, Field[] fields, bool onlyTable)
+        public static string GenerateClass(string name, Field[] fields, bool onlyTable)
         {
             string classData = "";
             classData = "using UnityEngine;\n";
@@ -59,17 +59,10 @@ namespace CsvConverter
 
             classData += "}\n";
 
-            string filePath = Path.Combine(Path.Combine(Application.dataPath, destination), name + ".cs");
-            using (StreamWriter writer = File.CreateText(filePath))
-            {
-                writer.WriteLine(classData);
-            }
-
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            return classData;
         }
 
-        public static void GenerateTableClass(CsvConverterSettings.Setting setting, string tableClassName, Field[] keys)
+        public static string GenerateTableClass(CsvConverterSettings.Setting setting, string tableClassName, Field[] keys)
         {
             string className = setting.className;
 
@@ -120,15 +113,7 @@ namespace CsvConverter
             code = code.Replace("%TableClassName%", tableClassName);
             code = code.Replace("%ClassName%", className);
 
-            string filePath = Path.Combine(Path.Combine(Application.dataPath, setting.destination),
-                tableClassName + ".cs");
-            using (StreamWriter writer = File.CreateText(filePath))
-            {
-                writer.WriteLine(code);
-            }
-
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            return code;
         }
 
         public static string LoadNoKeyListTableTemplate()

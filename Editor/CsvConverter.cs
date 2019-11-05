@@ -10,17 +10,18 @@ namespace CsvConverter
 {
     public class CsvConverter
     {
-        public static void GenerateCode(CsvConverterSettings.Setting s, GlobalCCSettings gSettings)
+        public static void GenerateCode(CsvConverterSettings.Setting s, GlobalCCSettings gSettings, string settingPath)
         {
-            TextAsset textAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(Path.Combine("Assets", s.csvFilePath));
+            string csvPath = CCLogic.GetFilePathRelativesToAssets(settingPath, s.csvFilePath);
+            TextAsset textAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(csvPath);
 
             if (textAsset == null)
             {
-                Debug.LogError("Not found : " + s.csvFilePath);
+                Debug.LogError("Not found : " + csvPath);
                 return;
             }
 
-            string directoryPath = Path.Combine(Application.dataPath, s.destination);
+            string directoryPath = CCLogic.GetFullPath(settingPath, s.destination);
 
             if (!Directory.Exists(directoryPath))
             {
@@ -37,9 +38,15 @@ namespace CsvConverter
             {
                 CsvData headers = csv.Slice(gSettings.rowIndexOfName, gSettings.rowIndexOfName + 1);
                 CsvData contents = csv.Slice(gSettings.rowIndexOfEnumContentStart);
-                EnumGenerator.Generate(s.destination, s.className, headers, contents);
+                string code = EnumGenerator.Generate(s.className, headers, contents);
 
-                Debug.LogFormat("Create \"{0}\"", Path.Combine(s.destination, s.className + ".cs"));
+                string filePath = Path.Combine(directoryPath, s.className + ".cs");
+                using (StreamWriter writer = File.CreateText(filePath))
+                {
+                    writer.WriteLine(code);
+                }
+
+                Debug.LogFormat("Create \"{0}\"", filePath);
             }
             else
             {
@@ -47,9 +54,16 @@ namespace CsvConverter
 
                 if (s.classGenerate)
                 {
-                    ClassGenerator.GenerateClass(s.destination, s.className, fields,
-                        s.tableGenerate && s.onlyTableCreate);
-                    Debug.LogFormat("Create \"{0}\"", Path.Combine(s.destination, s.className + ".cs"));
+                    string code =
+                        ClassGenerator.GenerateClass(s.className, fields, s.tableGenerate && s.onlyTableCreate);
+
+                    string filePath = Path.Combine(directoryPath, s.className + ".cs");
+                    using (StreamWriter writer = File.CreateText(filePath))
+                    {
+                        writer.WriteLine(code);
+                    }
+
+                    Debug.LogFormat("Create \"{0}\"", filePath);
                 }
 
                 if (s.tableClassGenerate)
@@ -70,19 +84,29 @@ namespace CsvConverter
                         key = keyFieldList.ToArray();
                     }
 
-                    ClassGenerator.GenerateTableClass(s, s.tableClassName, key);
-                    Debug.LogFormat("Create \"{0}\"", Path.Combine(s.destination, s.tableClassName + ".cs"));
+                    string code = ClassGenerator.GenerateTableClass(s, s.tableClassName, key);
+
+                    string filePath = Path.Combine(directoryPath, s.tableClassName + ".cs");
+                    using (StreamWriter writer = File.CreateText(filePath))
+                    {
+                        writer.WriteLine(code);
+                    }
+                    
+                    Debug.LogFormat("Create \"{0}\"", filePath);
                 }
             }
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
 
-        public static void CreateAssets(CsvConverterSettings.Setting s, GlobalCCSettings gSettings)
+        public static void CreateAssets(CsvConverterSettings.Setting s, GlobalCCSettings gSettings, string settingPath)
         {
-            TextAsset textAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(Path.Combine("Assets", s.csvFilePath));
+            string csvPath = CCLogic.GetFilePathRelativesToAssets(settingPath, s.csvFilePath);
+            TextAsset textAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(csvPath);
 
             if (textAsset == null)
             {
-                Debug.LogError("Not found : " + s.csvFilePath);
+                Debug.LogError("Not found : " + csvPath);
                 return;
             }
 
@@ -96,7 +120,7 @@ namespace CsvConverter
 
             CsvData csv = new CsvData();
             csv.SetFromList(cell);
-            
+
             CsvData contents = csv.Slice(gSettings.rowIndexOfContentStart);
 
             Field[] fields = CsvLogic.GetFieldsFromHeader(csv, gSettings);
@@ -143,11 +167,11 @@ namespace CsvConverter
 
             if (s.tableGenerate)
             {
-                assetsGenerator.Setup(assetType, tableType);
+                assetsGenerator.Setup(assetType, tableType, settingPath);
             }
             else
             {
-                assetsGenerator.Setup(assetType);
+                assetsGenerator.Setup(assetType, settingPath);
             }
 
             bool success = assetsGenerator.CreateCsvAssets();
@@ -163,7 +187,7 @@ namespace CsvConverter
 
             EditorUtility.ClearProgressBar();
         }
-        
+
         public static bool TryGetTypeWithError(string name, out Type type)
         {
             List<Type> candidates = GetTypeByName(name);

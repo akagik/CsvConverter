@@ -11,7 +11,7 @@ namespace CsvConverter
         public static readonly string VALUE_NAME = "VALUE";
 
 
-        static public bool Generate(string destination, string name, CsvData header, CsvData contents)
+        public static string Generate(string name, CsvData header, CsvData contents)
         {
             Field[] fields = GetFieldsFromHeader(header);
 
@@ -65,16 +65,8 @@ namespace CsvConverter
             }
 
             classData += "}";
-
-            string filePath = Path.Combine(Path.Combine(Application.dataPath, destination), name + ".cs");
-            using (StreamWriter writer = File.CreateText(filePath))
-            {
-                writer.WriteLine(classData);
-            }
-
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            return true;
+            
+            return classData;
         }
 
         public static Field[] GetFieldsFromHeader(CsvData grid)

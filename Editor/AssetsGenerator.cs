@@ -38,20 +38,20 @@ namespace CsvConverter
             createdRowCount = 0;
         }
 
-        public void Setup(Type _assetType)
+        public void Setup(Type _assetType, string settingPath)
         {
             assetType = _assetType;
-            dstFolder = Path.Combine("Assets", setting.destination);
+            dstFolder = CCLogic.GetFilePathRelativesToAssets(settingPath, setting.destination);
 
             // Asset の名前をつけるときに利用する key.
             keyIndexes = ClassGenerator.FindKeyIndexes(setting, fields);
         }
 
         // テーブルありの設定
-        public void Setup(Type _assetType, Type _tableType)
+        public void Setup(Type _assetType, Type _tableType, string settingPath)
         {
             tableType = _tableType;
-            Setup(_assetType);
+            Setup(_assetType, settingPath);
 
             FieldInfo dataListField = tableType.GetField(ClassGenerator.ROWS,
                 BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);

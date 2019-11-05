@@ -53,15 +53,11 @@ namespace CsvConverter
         {
 #if ODIN_INSPECTOR
             [Title("Basic Settings")]
-            [FilePath(ParentFolder = "Assets", RequireExistingPath = true)]
 #endif
             public string csvFilePath;
 
             public string className;
 
-#if ODIN_INSPECTOR
-            [FolderPath(ParentFolder = "Assets", RequireExistingPath = true)]
-#endif
             public string destination = "";
 
 #if ODIN_INSPECTOR
