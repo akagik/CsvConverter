@@ -8,8 +8,6 @@ namespace CsvConverter
 {
     public class CsvConverterWindow : EditorWindow
     {
-        public static string SETTINGS_KEY = "CsvConverter/settings";
-
         public CsvConverterSettings settings;
         private bool isDownloading;
         private Vector2 scrollPosition;
@@ -35,7 +33,7 @@ namespace CsvConverter
 
         void OnEnable()
         {
-            string guid = EditorUserSettings.GetConfigValue(SETTINGS_KEY);
+            string guid = EditorUserSettings.GetConfigValue(CCLogic.SETTINGS_KEY);
             string path = AssetDatabase.GUIDToAssetPath(guid);
 
             if (path != "")
@@ -103,8 +101,8 @@ namespace CsvConverter
                         if (savedGUID != guid)
                         {
                             // Debug.Log("Save GUID(" + guid + ") at " + SETTINGS_KEY);
-                            EditorPrefs.SetString(SETTINGS_KEY, guid);
-                            EditorUserSettings.SetConfigValue(SETTINGS_KEY, guid);
+                            EditorPrefs.SetString(CCLogic.SETTINGS_KEY, guid);
+                            EditorUserSettings.SetConfigValue(CCLogic.SETTINGS_KEY, guid);
                             savedGUID = guid;
                         }
                     }

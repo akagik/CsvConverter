@@ -9,6 +9,8 @@ namespace CsvConverter
     /// </summary>
     public static class CCLogic
     {
+        public static string SETTINGS_KEY = "CsvConverter/settings";
+        
         /// <summary>
         /// グローバルな設定ファイルを検索して、それを返す.
         ///
@@ -17,7 +19,7 @@ namespace CsvConverter
         /// </summary>
         public static GlobalCCSettings GetGlobalSettings()
         {
-            string[] settingGUIDArray = AssetDatabase.FindAssets("t:GlobalCsvConverterSettings");
+            string[] settingGUIDArray = AssetDatabase.FindAssets("t:" + typeof(GlobalCCSettings));
 
             if (settingGUIDArray.Length >= 2)
             {
