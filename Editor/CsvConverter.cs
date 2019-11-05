@@ -33,20 +33,19 @@ namespace CsvConverter
             CsvData csv = new CsvData();
             csv.SetFromList(cell);
 
+            GlobalCsvConverterSettings gSettings = GetGlobalSettings();
+
             if (s.isEnum)
             {
-                CsvData headers = csv.Slice(0, 1);
-                CsvData contents = csv.Slice(1);
+                CsvData headers = csv.Slice(gSettings.rowIndexOfName, gSettings.rowIndexOfName + 1);
+                CsvData contents = csv.Slice(gSettings.rowIndexOfEnumContentStart);
                 EnumGenerator.Generate(s.destination, s.className, headers, contents);
 
                 Debug.LogFormat("Create \"{0}\"", Path.Combine(s.destination, s.className + ".cs"));
             }
             else
             {
-                CsvData headers = csv.Slice(0, 2);
-                CsvData contents = csv.Slice(2);
-
-                Field[] fields = GetFieldsFromHeader(headers);
+                Field[] fields = CsvLogic.GetFieldsFromHeader(csv, gSettings);
 
                 if (s.classGenerate)
                 {
@@ -99,12 +98,12 @@ namespace CsvConverter
 
             CsvData csv = new CsvData();
             csv.SetFromList(cell);
+            
+            GlobalCsvConverterSettings gSettings = GetGlobalSettings();
 
-            CsvData headers = csv.Slice(0, 2);
-            CsvData contents = csv.Slice(2);
+            CsvData contents = csv.Slice(gSettings.rowIndexOfContentStart);
 
-            Field[] fields = GetFieldsFromHeader(headers);
-
+            Field[] fields = CsvLogic.GetFieldsFromHeader(csv, gSettings);
 
             // アセットを生成する.
             AssetsGenerator assetsGenerator = new AssetsGenerator(s, fields, contents);
@@ -168,49 +167,7 @@ namespace CsvConverter
 
             EditorUtility.ClearProgressBar();
         }
-
-        public static Field[] GetFieldsFromHeader(CsvData grid)
-        {
-            var fields = new Field[grid.col];
-            for (int i = 0; i < fields.Length; i++)
-            {
-                fields[i] = new Field();
-            }
-
-            // get field names;
-            for (int col = 0; col < grid.col; col++)
-            {
-                string fieldName = grid.Get(0, col);
-                fieldName = fieldName.Trim();
-
-                if (fieldName == string.Empty)
-                {
-                    fields[col].isValid = false;
-                    continue;
-                }
-
-                fields[col].fieldName = fieldName;
-            }
-
-            // set field types;
-            for (int col = 0; col < grid.col; col++)
-            {
-                if (!fields[col].isValid) continue;
-
-                string typeName = grid.Get(1, col).Trim();
-
-                if (typeName == string.Empty)
-                {
-                    fields[col].isValid = false;
-                    continue;
-                }
-
-                fields[col].typeName = typeName;
-            }
-
-            return fields;
-        }
-
+        
         public static bool TryGetTypeWithError(string name, out Type type)
         {
             List<Type> candidates = GetTypeByName(name);
@@ -271,6 +228,24 @@ namespace CsvConverter
             }
 
             return settings;
+        }
+
+        public static GlobalCsvConverterSettings GetGlobalSettings()
+        {
+            string[] settingGUIDArray = AssetDatabase.FindAssets("t:GlobalCsvConverterSettings");
+
+            if (settingGUIDArray.Length >= 2)
+            {
+                throw new Exception("GlobalCsvConverterSettings がプロジェクト内に複数存在します");
+            }
+            // グローバルな設定ファイルが見つからない場合はその場で一時的に生成する.
+            else if (settingGUIDArray.Length == 0)
+            {
+                return ScriptableObject.CreateInstance<GlobalCsvConverterSettings>();
+            }
+
+            string path = AssetDatabase.GUIDToAssetPath(settingGUIDArray[0]);
+            return AssetDatabase.LoadAssetAtPath<GlobalCsvConverterSettings>(path);
         }
     }
 }
