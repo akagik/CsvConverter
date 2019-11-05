@@ -6,7 +6,7 @@ namespace CsvConverter
     /// CsvConverter のグローバルな設定.
     /// </summary>
     [CreateAssetMenuAttribute(menuName = "CsvConverter/GlobalSettings")]
-    public class GlobalCsvConverterSettings : ScriptableObject
+    public class GlobalCCSettings : ScriptableObject
     {
         /// <summary>
         /// フィールド名の行の index.

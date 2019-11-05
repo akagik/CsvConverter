@@ -4,7 +4,7 @@ namespace CsvConverter
 {
     public static class CsvLogic
     {
-        public static Field[] GetFieldsFromHeader(CsvData csv, GlobalCsvConverterSettings gSettings)
+        public static Field[] GetFieldsFromHeader(CsvData csv, GlobalCCSettings gSettings)
         {
             CsvData nameHeaders = csv.Slice(gSettings.rowIndexOfName, gSettings.rowIndexOfName + 1);
             CsvData typeHeaders = csv.Slice(gSettings.rowIndexOfType, gSettings.rowIndexOfType + 1);

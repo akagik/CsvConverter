@@ -10,7 +10,7 @@ namespace CsvConverter
 {
     public class CsvConverter
     {
-        public static void GenerateCode(CsvConverterSettings.Setting s)
+        public static void GenerateCode(CsvConverterSettings.Setting s, GlobalCCSettings gSettings)
         {
             TextAsset textAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(Path.Combine("Assets", s.csvFilePath));
 
@@ -32,8 +32,6 @@ namespace CsvConverter
 
             CsvData csv = new CsvData();
             csv.SetFromList(cell);
-
-            GlobalCsvConverterSettings gSettings = GetGlobalSettings();
 
             if (s.isEnum)
             {
@@ -78,7 +76,7 @@ namespace CsvConverter
             }
         }
 
-        public static void CreateAssets(CsvConverterSettings.Setting s)
+        public static void CreateAssets(CsvConverterSettings.Setting s, GlobalCCSettings gSettings)
         {
             TextAsset textAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(Path.Combine("Assets", s.csvFilePath));
 
@@ -99,8 +97,6 @@ namespace CsvConverter
             CsvData csv = new CsvData();
             csv.SetFromList(cell);
             
-            GlobalCsvConverterSettings gSettings = GetGlobalSettings();
-
             CsvData contents = csv.Slice(gSettings.rowIndexOfContentStart);
 
             Field[] fields = CsvLogic.GetFieldsFromHeader(csv, gSettings);
@@ -228,24 +224,6 @@ namespace CsvConverter
             }
 
             return settings;
-        }
-
-        public static GlobalCsvConverterSettings GetGlobalSettings()
-        {
-            string[] settingGUIDArray = AssetDatabase.FindAssets("t:GlobalCsvConverterSettings");
-
-            if (settingGUIDArray.Length >= 2)
-            {
-                throw new Exception("GlobalCsvConverterSettings がプロジェクト内に複数存在します");
-            }
-            // グローバルな設定ファイルが見つからない場合はその場で一時的に生成する.
-            else if (settingGUIDArray.Length == 0)
-            {
-                return ScriptableObject.CreateInstance<GlobalCsvConverterSettings>();
-            }
-
-            string path = AssetDatabase.GUIDToAssetPath(settingGUIDArray[0]);
-            return AssetDatabase.LoadAssetAtPath<GlobalCsvConverterSettings>(path);
         }
     }
 }

@@ -153,8 +153,9 @@ namespace CsvConverter
                     GUI.enabled = s.canGenerateCode;
                     if (GUILayout.Button("Generate Code", GUILayout.Width(110)) && !isDownloading)
                     {
+                        GlobalCCSettings gSettings = CCLogic.GetGlobalSettings();
                         isDownloading = true;
-                        GenerateOneCode(s);
+                        GenerateOneCode(s, gSettings);
                         isDownloading = false;
 
                         GUIUtility.ExitGUI();
@@ -164,8 +165,9 @@ namespace CsvConverter
 
                     if (GUILayout.Button("Create Assets", GUILayout.Width(110)) && !isDownloading)
                     {
+                        GlobalCCSettings gSettings = CCLogic.GetGlobalSettings();
                         isDownloading = true;
-                        CreateOneAssets(s);
+                        CreateOneAssets(s, gSettings);
                         isDownloading = false;
 
                         GUIUtility.ExitGUI();
@@ -180,8 +182,9 @@ namespace CsvConverter
                 GUILayout.BeginHorizontal("box");
                 if (GUILayout.Button("Generate All Codes", "LargeButtonMid") && !isDownloading)
                 {
+                    GlobalCCSettings gSettings = CCLogic.GetGlobalSettings();
                     isDownloading = true;
-                    GenerateAllCode(setting);
+                    GenerateAllCode(setting, gSettings);
                     isDownloading = false;
 
                     GUIUtility.ExitGUI();
@@ -189,8 +192,9 @@ namespace CsvConverter
 
                 if (GUILayout.Button("Create All Assets", "LargeButtonMid") && !isDownloading)
                 {
+                    GlobalCCSettings gSettings = CCLogic.GetGlobalSettings();
                     isDownloading = true;
-                    CreateAllAssets(setting);
+                    CreateAllAssets(setting, gSettings);
                     isDownloading = false;
 
                     GUIUtility.ExitGUI();
@@ -200,7 +204,7 @@ namespace CsvConverter
             }
         }
 
-        public static void GenerateAllCode(CsvConverterSettings.Setting[] setting)
+        public static void GenerateAllCode(CsvConverterSettings.Setting[] setting, GlobalCCSettings gSettings)
         {
             int i = 0;
 
@@ -209,7 +213,7 @@ namespace CsvConverter
                 foreach (CsvConverterSettings.Setting s in setting)
                 {
                     show_progress(s.className, (float) i / setting.Length, i, setting.Length);
-                    CsvConverter.GenerateCode(s);
+                    CsvConverter.GenerateCode(s, gSettings);
                     i++;
                     show_progress(s.className, (float) i / setting.Length, i, setting.Length);
                 }
@@ -224,13 +228,13 @@ namespace CsvConverter
             EditorUtility.ClearProgressBar();
         }
 
-        public static void CreateAllAssets(CsvConverterSettings.Setting[] setting)
+        public static void CreateAllAssets(CsvConverterSettings.Setting[] setting, GlobalCCSettings gSettings)
         {
             try
             {
                 foreach (CsvConverterSettings.Setting s in setting)
                 {
-                    CsvConverter.CreateAssets(s);
+                    CsvConverter.CreateAssets(s, gSettings);
                 }
             }
             catch (Exception e)
@@ -243,13 +247,13 @@ namespace CsvConverter
             EditorUtility.ClearProgressBar();
         }
 
-        public static void GenerateOneCode(CsvConverterSettings.Setting s)
+        public static void GenerateOneCode(CsvConverterSettings.Setting s, GlobalCCSettings gSettings)
         {
             show_progress(s.className, 0, 0, 1);
 
             try
             {
-                CsvConverter.GenerateCode(s);
+                CsvConverter.GenerateCode(s, gSettings);
             }
             catch (Exception e)
             {
@@ -263,11 +267,11 @@ namespace CsvConverter
             EditorUtility.ClearProgressBar();
         }
 
-        public static void CreateOneAssets(CsvConverterSettings.Setting s)
+        public static void CreateOneAssets(CsvConverterSettings.Setting s, GlobalCCSettings gSettings)
         {
             try
             {
-                CsvConverter.CreateAssets(s);
+                CsvConverter.CreateAssets(s, gSettings);
             }
             catch (Exception e)
             {
