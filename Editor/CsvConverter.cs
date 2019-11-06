@@ -33,6 +33,7 @@ namespace CsvConverter
 
             CsvData csv = new CsvData();
             csv.SetFromList(cell);
+            csv = csv.SliceColumn(gSettings.columnIndexOfTableStart);
 
             if (s.isEnum)
             {
@@ -120,6 +121,7 @@ namespace CsvConverter
 
             CsvData csv = new CsvData();
             csv.SetFromList(cell);
+            csv = csv.SliceColumn(gSettings.columnIndexOfTableStart);
 
             CsvData contents = csv.Slice(gSettings.rowIndexOfContentStart);
 

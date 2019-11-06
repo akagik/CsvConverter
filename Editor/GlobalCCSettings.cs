@@ -33,5 +33,13 @@ namespace CsvConverter
         /// enum 定義の実際のコンテンツ定義が始まる index.
         /// </summary>
         public int rowIndexOfEnumContentStart = 1;
+        
+        /// <summary>
+        /// テーブルが始まる列 index.
+        ///
+        /// 例えば, これを 2 に設定していると index 0, 1 の列は無視される.
+        /// </summary>
+        public int columnIndexOfTableStart = 0;
+
     }
 }

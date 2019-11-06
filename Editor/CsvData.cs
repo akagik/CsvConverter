@@ -28,6 +28,33 @@ namespace CsvConverter
             {
                 data = new string[col];
             }
+            
+            public Row Slice(int startIndex, int endIndex = int.MaxValue)
+            {
+                int n = data.Length;
+
+                if (endIndex >= n)
+                {
+                    endIndex = n;
+                }
+                else if (endIndex <= -n)
+                {
+                    return new Row(0);
+                }
+                else
+                {
+                    endIndex = (endIndex % n + n) % n;
+                }
+
+                if (startIndex >= endIndex)
+                {
+                    return new Row(0);
+                }
+
+                Row row = new Row(endIndex - startIndex);
+                Array.Copy(data, startIndex, row.data, 0, row.data.Length);
+                return row;
+            }
         }
 
         public CsvData()
@@ -44,7 +71,7 @@ namespace CsvConverter
         {
             int n = content.Length;
 
-            if (endIndex > n)
+            if (endIndex >= n)
             {
                 endIndex = n;
             }
@@ -64,6 +91,31 @@ namespace CsvConverter
 
             Row[] newContent = new Row[endIndex - startIndex];
             Array.Copy(content, startIndex, newContent, 0, newContent.Length);
+            return new CsvData(newContent);
+        }
+        
+        public CsvData SliceColumn(int startIndex, int endIndex = int.MaxValue)
+        {
+            int n = content.Length;
+
+            if (endIndex >= n)
+            {
+                endIndex = n;
+            }
+            else if (endIndex <= -n)
+            {
+                return new CsvData();
+            }
+            else
+            {
+                endIndex = (endIndex % n + n) % n;
+            }
+
+            Row[] newContent = new Row[content.Length];
+            for (int i = 0; i < newContent.Length; i++)
+            {
+                newContent[i] = content[i].Slice(startIndex, endIndex);
+            }
             return new CsvData(newContent);
         }
 
