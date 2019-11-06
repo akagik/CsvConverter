@@ -172,6 +172,11 @@ namespace CsvConverter
             if (success)
             {
                 Debug.LogFormat("生成された総行数: {0}", assetsGenerator.createdRowCount);
+
+                if (assetsGenerator.createdObject != null)
+                {
+                    EditorGUIUtility.PingObject(assetsGenerator.createdObject.GetInstanceID());
+                }
             }
             else
             {
@@ -226,21 +231,6 @@ namespace CsvConverter
             }
 
             return candidates;
-        }
-
-        public static CsvConverterSettings[] GetSettings()
-        {
-            string[] settingGUIDArray = AssetDatabase.FindAssets("t:CsvConverterSettings");
-
-            CsvConverterSettings[] settings = new CsvConverterSettings[settingGUIDArray.Length];
-
-            for (int i = 0; i < settingGUIDArray.Length; i++)
-            {
-                string path = AssetDatabase.GUIDToAssetPath(settingGUIDArray[i]);
-                settings[i] = AssetDatabase.LoadAssetAtPath<CsvConverterSettings>(path);
-            }
-
-            return settings;
         }
     }
 }

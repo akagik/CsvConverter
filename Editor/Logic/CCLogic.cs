@@ -59,5 +59,25 @@ namespace CsvConverter
             // "Assets/" までを除外して dataPath と結合
             return Path.Combine(Application.dataPath, pathRelativeToAssets.Substring(7));
         }
+
+        /// <summary>
+        /// メインの出力アセットへのパスを指す.
+        /// </summary>
+        public static string GetMainOutputPath(CsvConverterSettings.Setting s, string settingsPath)
+        {
+            var dst = CCLogic.GetFilePathRelativesToAssets(settingsPath, s.destination);
+
+            if (s.isEnum)
+            {
+                return Path.Combine(dst, s.className + ".cs");
+            }
+
+            if (s.tableGenerate)
+            {
+                return Path.Combine(dst, s.tableAssetName + ".asset");
+            }
+
+            return dst;
+        }
     }
 }

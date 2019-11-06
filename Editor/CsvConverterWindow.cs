@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System.Linq;
+using Object = UnityEngine.Object;
 
 namespace CsvConverter
 {
@@ -26,6 +27,7 @@ namespace CsvConverter
         private bool isAll = true;
         CsvConverterSettings.Setting[] cachedAllSettings;
         private string[] cachedAllSettingsPath;
+        private CsvConverterSettings[] cachedAllParentSettings;
 
         [MenuItem("Window/CsvConverter", false, 0)]
         static public void OpenWindow()
@@ -54,7 +56,8 @@ namespace CsvConverter
             // isAll用のデータをキャッシュ
             var allSettingList = new List<CsvConverterSettings.Setting>();
             var allSettingPathList = new List<string>();
-            
+            var allParentSettingList = new List<CsvConverterSettings>();
+
             string[] settingGUIDArray = AssetDatabase.FindAssets("t:CsvConverterSettings");
             for (int i = 0; i < settingGUIDArray.Length; i++)
             {
@@ -64,10 +67,12 @@ namespace CsvConverter
 
                 string settingPath = Path.GetDirectoryName(assetPath);
                 allSettingPathList.AddRange(Enumerable.Repeat(settingPath, settings.list.Length));
+                allParentSettingList.AddRange(Enumerable.Repeat(settings, settings.list.Length));
             }
 
             cachedAllSettings = allSettingList.ToArray();
             cachedAllSettingsPath = allSettingPathList.ToArray();
+            cachedAllParentSettings = allParentSettingList.ToArray();
         }
 
         private void OnGUI()
@@ -75,14 +80,16 @@ namespace CsvConverter
             GUILayout.Space(6f);
             isAll = EditorGUILayout.Toggle("AllSettings", isAll);
             CsvConverterSettings.Setting[] setting = null;
+            CsvConverterSettings[] parentSettings = null;
             string[] paths = null;
-            
+
             if (isAll)
             {
                 if (cachedAllSettings != null)
                 {
                     setting = cachedAllSettings;
                     paths = cachedAllSettingsPath;
+                    parentSettings = cachedAllParentSettings;
                 }
             }
             else
@@ -94,6 +101,8 @@ namespace CsvConverter
 
                 string settingPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(settings));
                 paths = Enumerable.Repeat(settingPath, setting.Length).ToArray();
+
+                parentSettings = Enumerable.Repeat(settings, settings.list.Length).ToArray();
             }
 
             // 検索ボックスを表示
@@ -157,11 +166,19 @@ namespace CsvConverter
 
                     if (s.tableGenerate)
                     {
-                        GUILayout.Label(s.tableAssetName);
+                        if (GUILayout.Button(s.tableAssetName, "Label"))
+                        {
+                            EditorGUIUtility.PingObject(parentSettings[i].GetInstanceID());
+                            GUIUtility.ExitGUI();
+                        }
                     }
                     else
                     {
-                        GUILayout.Label(s.className);
+                        if (GUILayout.Button(s.className, "Label"))
+                        {
+                            EditorGUIUtility.PingObject(parentSettings[i].GetInstanceID());
+                            GUIUtility.ExitGUI();
+                        }
                     }
 
                     GUI.enabled = s.canGenerateCode;
@@ -188,6 +205,20 @@ namespace CsvConverter
                     }
 
                     GUI.enabled = true;
+
+                    {
+                        string mainOutputPath = CCLogic.GetMainOutputPath(s, path);
+
+                        if (mainOutputPath != null)
+                        {
+                            Object outputRef = AssetDatabase.LoadAssetAtPath<Object>(mainOutputPath);
+
+                            EditorGUI.BeginDisabledGroup(true);
+                            EditorGUILayout.ObjectField(outputRef, typeof(Object), false, GUILayout.Width(100));
+                            EditorGUI.EndDisabledGroup();
+                        }
+                    }
+
                     GUILayout.EndHorizontal();
                 }
 
@@ -218,7 +249,8 @@ namespace CsvConverter
             }
         }
 
-        public static void GenerateAllCode(CsvConverterSettings.Setting[] setting, GlobalCCSettings gSettings, string[] settingPaths)
+        public static void GenerateAllCode(CsvConverterSettings.Setting[] setting, GlobalCCSettings gSettings,
+            string[] settingPaths)
         {
             int i = 0;
 
@@ -242,7 +274,8 @@ namespace CsvConverter
             EditorUtility.ClearProgressBar();
         }
 
-        public static void CreateAllAssets(CsvConverterSettings.Setting[] setting, GlobalCCSettings gSettings, string[] settingPaths)
+        public static void CreateAllAssets(CsvConverterSettings.Setting[] setting, GlobalCCSettings gSettings,
+            string[] settingPaths)
         {
             try
             {
@@ -261,7 +294,8 @@ namespace CsvConverter
             EditorUtility.ClearProgressBar();
         }
 
-        public static void GenerateOneCode(CsvConverterSettings.Setting s, GlobalCCSettings gSettings, string settingPath)
+        public static void GenerateOneCode(CsvConverterSettings.Setting s, GlobalCCSettings gSettings,
+            string settingPath)
         {
             show_progress(s.className, 0, 0, 1);
 
@@ -281,7 +315,8 @@ namespace CsvConverter
             EditorUtility.ClearProgressBar();
         }
 
-        public static void CreateOneAssets(CsvConverterSettings.Setting s, GlobalCCSettings gSettings, string settingPath)
+        public static void CreateOneAssets(CsvConverterSettings.Setting s, GlobalCCSettings gSettings,
+            string settingPath)
         {
             try
             {

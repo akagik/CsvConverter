@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Object = UnityEngine.Object;
 
 namespace CsvConverter
 {
@@ -28,6 +29,11 @@ namespace CsvConverter
 
         // ログ情報
         public int createdRowCount;
+
+        public Object createdObject
+        {
+            get { return tableInstance; }
+        }
 
         public AssetsGenerator(CsvConverterSettings.Setting _setting, Field[] _fields, CsvData _content)
         {
