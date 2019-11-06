@@ -39,15 +39,7 @@ namespace CsvConverter
             AssetDatabase.CreateAsset(t, AssetDatabase.GenerateUniqueAssetPath(filePath));
             AssetDatabase.Refresh();
         }
-
-        public void OnValidate()
-        {
-            for (int i = 0; i < list.Length; i++)
-            {
-                list[i].CalculateCanCreateAsset();
-            }
-        }
-
+        
         [Serializable]
         public class Setting
         {
@@ -128,29 +120,11 @@ namespace CsvConverter
             }
 
             // asset を生成できるかどうか?
-            public bool canCreateAsset { get; private set; }
-
-            public void CalculateCanCreateAsset()
+            public bool canCreateAsset
             {
-                // enum の場合は Asset を生成できない
-                if (isEnum)
-                {
-                    canCreateAsset = false;
-                    return;
-                }
-
-                // クラスが生成されていない場合も Asset を生成できない
-                List<Type> assetTypes = CsvConverter.GetTypeByName(className);
-                if (assetTypes.Count == 0)
-                {
-                    canCreateAsset = false;
-                }
-                else
-                {
-                    canCreateAsset = true;
-                }
+                get { return !isEnum; }
             }
-
+            
             public string tableAssetName
             {
                 get
