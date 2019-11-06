@@ -208,7 +208,6 @@ public static class Str2TypeConverter
         }
         else
         {
-            Debug.LogError("サポートされていない型です: " + t);
             return null;
         }
 
@@ -229,36 +228,43 @@ public static class Str2TypeConverter
         return path.Replace(extension, string.Empty);
     }
 
-    private static object LoadAsset<T>(string sValue) where T : UnityEngine.Object
+    public static object LoadAsset<T>(string sValue) where T : UnityEngine.Object
+    {
+        return LoadAsset(sValue, typeof(T));
+    }
+
+    public static object LoadAsset(string sValue, Type type)
     {
         if (sValue == "")
         {
             return null;
         }
 
+        string typeName = type.Name;
         string path = Path.Combine("Assets", sValue);
-        var asset = AssetDatabase.LoadAssetAtPath<T>(path);
+        var asset = AssetDatabase.LoadAssetAtPath(path, type);
+
         // フルパスで見つからない場合はファイル名＋指定フィルターで最初に見つかったものを返す.
         if (asset == null)
         {
-            string targetType = typeof(T).Name;
-            string[] guids = AssetDatabase.FindAssets("\"" + GetPathWithoutExtension(sValue) + "\" t:" + targetType);
+            string filter = $"\"{GetPathWithoutExtension(sValue)}\" t:{typeName}";
+            string[] guids = AssetDatabase.FindAssets(filter);
 
             if (guids.Length == 0)
             {
-                Debug.LogErrorFormat("Not found {0}: \"{1}\"", targetType, sValue);
+                Debug.LogErrorFormat("Not found {0}: \"{1}\"", typeName, sValue);
             }
 
             if (guids.Length > 1)
             {
-                Debug.LogWarningFormat("{0} \"{1}\" に対して複数のアセットが見つかりました:\n{2}", targetType, sValue,
+                Debug.LogWarningFormat("{0} \"{1}\" に対して複数のアセットが見つかりました:\n{2}", typeName, sValue,
                     string.Join("\n", guids));
             }
 
             if (guids.Length > 0)
             {
                 path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                asset = AssetDatabase.LoadAssetAtPath<T>(path);
+                asset = AssetDatabase.LoadAssetAtPath(path, type);
             }
             else
             {

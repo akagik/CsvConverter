@@ -120,6 +120,24 @@ namespace CsvConverter
 
             // アセットを生成する.
             AssetsGenerator assetsGenerator = new AssetsGenerator(s, fields, contents);
+            
+            // カスタムアセットタイプを設定する
+            // これはプロジェクト固有のアセットをテーブルでセット出来るようにする.
+            {
+                Type[] customAssetTypes = new Type[gSettings.customAssetTypes.Length];
+                for (int i = 0; i < customAssetTypes.Length; i++)
+                {
+                    if (TryGetTypeWithError(gSettings.customAssetTypes[i], out var type))
+                    {
+                        customAssetTypes[i] = type;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+                assetsGenerator.SetCustomAssetTypes(customAssetTypes);
+            }
 
             // 生成する各要素の class type を取得
             Type assetType;

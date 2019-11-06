@@ -55,5 +55,11 @@ namespace CsvConverter
         [Sirenix.OdinInspector.ShowIf("isEndMarkerEnabled")]
 #endif
         public string endMarker = "END";
+
+        /// <summary>
+        /// Str2Converter で利用される追加の型.
+        /// 基本は t:TypeName フィルターで検索されるアセットが対象となる.
+        /// </summary>
+        public string[] customAssetTypes;
     }
 }

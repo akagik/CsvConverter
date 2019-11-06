@@ -13,6 +13,8 @@ namespace CsvConverter
     public class AssetsGenerator
     {
         private CsvConverterSettings.Setting setting;
+        private Type[] customAssetTypes;
+
         private Field[] fields;
         private CsvData content;
 
@@ -42,6 +44,11 @@ namespace CsvConverter
             content = _content;
 
             createdRowCount = 0;
+        }
+
+        public void SetCustomAssetTypes(Type[] _customAssetTypes)
+        {
+            customAssetTypes = _customAssetTypes;
         }
 
         public void Setup(Type _assetType, string settingPath)
@@ -214,6 +221,23 @@ namespace CsvConverter
                         else
                         {
                             value = Str2TypeConverter.Convert(fieldType, sValue);
+                            
+                            // 基本型で変換できないときは GlobalSettings の customAssetTypes で変換を試みる.
+                            if (value == null)
+                            {
+                                foreach (var type in customAssetTypes)
+                                {
+                                    if (fieldType == type)
+                                    {
+                                        value = Str2TypeConverter.LoadAsset(sValue, type);
+
+                                        if (value != null)
+                                        {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
 
                             if (value == null)
                             {
