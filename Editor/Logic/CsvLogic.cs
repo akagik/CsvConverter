@@ -1,9 +1,46 @@
-﻿using Generic;
+﻿using System;
+using Generic;
+using Unity.Collections.LowLevel.Unsafe;
+using UnityEngine;
 
 namespace CsvConverter
 {
     public static class CsvLogic
     {
+        public static CsvData GetValidCsvData(string csvText, GlobalCCSettings gSettings)
+        {
+            var csvAsList = CsvParser.ReadAsList(csvText);
+
+            CsvData csvData = new CsvData();
+            csvData.SetFromList(csvAsList);
+
+            // END マーカーが有効な場合は END 以下を無視するようにする.
+            if (gSettings.isEndMarkerEnabled)
+            {
+                int endMarkerIndex = gSettings.columnIndexOfEndMarker;
+                string marker = gSettings.endMarker;
+
+                if (endMarkerIndex < 0 || csvData.col <= endMarkerIndex)
+                {
+                    throw new Exception("無効な columnIndexOfEndMarker です: " + endMarkerIndex);
+                }
+
+                for (int i = 0; i < csvData.row; i++)
+                {
+                    if (csvData.Get(i, endMarkerIndex).Trim() == marker)
+                    {
+                        csvData = csvData.Slice(0, i);
+                        break;
+                    }
+                }
+            }
+            
+            // 無効な列を除外する
+            csvData = csvData.SliceColumn(gSettings.columnIndexOfTableStart);
+            
+            return csvData;
+        }
+        
         public static Field[] GetFieldsFromHeader(CsvData csv, GlobalCCSettings gSettings)
         {
             CsvData nameHeaders = csv.Slice(gSettings.rowIndexOfName, gSettings.rowIndexOfName + 1);

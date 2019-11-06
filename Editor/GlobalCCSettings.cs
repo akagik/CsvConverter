@@ -28,12 +28,12 @@ namespace CsvConverter
         /// 実際のコンテンツ定義が始まる index.
         /// </summary>
         public int rowIndexOfContentStart = 2;
-        
+
         /// <summary>
         /// enum 定義の実際のコンテンツ定義が始まる index.
         /// </summary>
         public int rowIndexOfEnumContentStart = 1;
-        
+
         /// <summary>
         /// テーブルが始まる列 index.
         ///
@@ -41,5 +41,19 @@ namespace CsvConverter
         /// </summary>
         public int columnIndexOfTableStart = 0;
 
+        /// <summary>
+        /// テーブルの終わりを示す EDN マーカー機能を有効にするかを指定する.
+        /// </summary>
+        public bool isEndMarkerEnabled = false;
+
+#if ODIN_INSPECTOR
+        [Sirenix.OdinInspector.ShowIf("isEndMarkerEnabled")]
+#endif
+        public int columnIndexOfEndMarker = 0;
+
+#if ODIN_INSPECTOR
+        [Sirenix.OdinInspector.ShowIf("isEndMarkerEnabled")]
+#endif
+        public string endMarker = "END";
     }
 }

@@ -29,12 +29,8 @@ namespace CsvConverter
                 return;
             }
 
-            var cell = CsvParser.ReadAsList(textAsset.text);
-
-            CsvData csv = new CsvData();
-            csv.SetFromList(cell);
-            csv = csv.SliceColumn(gSettings.columnIndexOfTableStart);
-
+            CsvData csv = CsvLogic.GetValidCsvData(textAsset.text, gSettings);
+            
             if (s.isEnum)
             {
                 CsvData headers = csv.Slice(gSettings.rowIndexOfName, gSettings.rowIndexOfName + 1);
@@ -117,12 +113,7 @@ namespace CsvConverter
             }
 
             // csv ファイルから読み込み
-            var cell = CsvParser.ReadAsList(textAsset.text);
-
-            CsvData csv = new CsvData();
-            csv.SetFromList(cell);
-            csv = csv.SliceColumn(gSettings.columnIndexOfTableStart);
-
+            CsvData csv = CsvLogic.GetValidCsvData(textAsset.text, gSettings);
             CsvData contents = csv.Slice(gSettings.rowIndexOfContentStart);
 
             Field[] fields = CsvLogic.GetFieldsFromHeader(csv, gSettings);
