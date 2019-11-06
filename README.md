@@ -1,6 +1,6 @@
 # CSV Converter
 
-CSV から class を生成して、ScriptableObject に変換する.
+CSV から class を生成して、テーブルを表す ScriptableObject に変換する.
 
 # Requirements
 Generic の CsvParser が必要:
@@ -18,6 +18,7 @@ https://github.com/akagik/Generic
 1行目は変数名
 2行目は各変数の型 (空白にするとその変数はスキップされる. 備考などは空白にする)
 3行目以降に実際のデータを入力する.
+(これらの設定は GlobalSettings から変更できます)
 
 ### 実際の例 (human.csv)
 | humanId | name | age | friendIds | 備考 |
@@ -39,6 +40,7 @@ https://github.com/akagik/Generic
 | bool | true | |
 | GameObject | "test.prefab" | (Assets からの)フルパスで見つからない場合はファイル名で検索する. |
 | Sprite | "test.png" | (Assets からの)フルパスで見つからない場合はファイル名で検索する. |
+| Material | "test.mat" | (Assets からの)フルパスで見つからない場合はファイル名で検索する. |
 | Vector2 | (4.5, 9.1) | |
 | Vector3 | (1.0, 2.2, 3.4) | |
 | Enum | White | 整数値でなく文字列を入れる. |
@@ -131,3 +133,30 @@ IsEnum にチェックが入っている場合は、テーブルを enum とし�
 | Back | 2 |
 | Left | 3 |
 
+## Global Settings
+
+`Create/CsvConverter/GlobalSettings` から作成可能.
+設定ファイルはプロジェクトにただ１つのみ存在するようにしなければならない.
+設定ファイルは Assets 以下ならどこ置いていても問題ない.
+
+| 項目 | 説明 |
+| ------------- | ------------- |
+| rowIndexOfName | フィールド名が存在する行 index. |
+| rowIndexOfType | 型名が存在する行 index. |
+| rowIndexOfEnabledColumn | 出力有効無効フラグが存在する行 index. |
+| rowIndexOfContentStart | テーブルのコンテンツが始まる行 index. |
+| rowIndexOfEnumContentStart | enum 定義が始まる行 index. |
+
+### rowIndexOfEnabledColumn 
+
+例えば rowIndexOfEnabledColumn = 2 とした場合、以下のように出来る.
+
+| humanId | friendId | comment | deleted |
+| ------- | ------------ | ------------ | ------------ |
+| int | int | | bool |
+| ○ | ○ | | |
+| 1 | 2 | テスト human | true |
+| 2 | 1 |  | false |
+
+上記で humanId, friendId のみが出力されるようになる.
+「○」という表記を使っているが、True/False などでも記述可能.
