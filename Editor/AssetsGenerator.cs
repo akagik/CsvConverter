@@ -75,6 +75,16 @@ namespace CsvConverter
             AssetDatabase.Refresh();
 
             dataList = dataListField.GetValue(tableInstance);
+            
+            // 初めてテーブルを作成する場合は null になっているので、
+            // インスタンスを作成して、tableInstance に代入する。
+            if (dataList == null)
+            {
+                Type listType = typeof(List<>);
+                var constructedListType = listType.MakeGenericType(dataListField.FieldType.GenericTypeArguments[0]);
+                dataList = Activator.CreateInstance(constructedListType);
+                dataListField.SetValue(tableInstance, dataList);
+            }
             dataList.GetType().GetMethod("Clear").Invoke(dataList, null);
         }
 
