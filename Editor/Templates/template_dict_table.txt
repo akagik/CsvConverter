@@ -88,6 +88,11 @@ public class %TableClassName% : ScriptableObject, IReadOnlyList<%ClassName%>
     {
         _dict = new Dictionary<%KeyType%, %ClassName%>();
 
+        if (rows == null)
+        {
+            return;
+        }
+
         for (int i = 0; i < rows.Count; i++)
         {
             %ClassName% row = rows[i];
