@@ -60,6 +60,6 @@ namespace CsvConverter
         /// Str2Converter で利用される追加の型.
         /// 基本は t:TypeName フィルターで検索されるアセットが対象となる.
         /// </summary>
-        public string[] customAssetTypes;
+        public string[] customAssetTypes = new string[0];
     }
 }
