@@ -96,7 +96,7 @@ namespace CsvConverter
         
         public CsvData SliceColumn(int startIndex, int endIndex = int.MaxValue)
         {
-            int n = content.Length;
+            int n = col;
 
             if (endIndex >= n)
             {
@@ -111,7 +111,7 @@ namespace CsvConverter
                 endIndex = (endIndex % n + n) % n;
             }
 
-            Row[] newContent = new Row[content.Length];
+            Row[] newContent = new Row[row];
             for (int i = 0; i < newContent.Length; i++)
             {
                 newContent[i] = content[i].Slice(startIndex, endIndex);
