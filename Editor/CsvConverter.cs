@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using ResultType = CsvConverter.AssetsGenerator.ResultType;
 
 namespace CsvConverter
 {
@@ -30,7 +31,7 @@ namespace CsvConverter
             }
 
             CsvData csv = CsvLogic.GetValidCsvData(textAsset.text, gSettings);
-            
+
             if (s.isEnum)
             {
                 CsvData headers = csv.Slice(gSettings.rowIndexOfName, gSettings.rowIndexOfName + 1);
@@ -88,10 +89,11 @@ namespace CsvConverter
                     {
                         writer.WriteLine(code);
                     }
-                    
+
                     Debug.LogFormat("Create \"{0}\"", filePath);
                 }
             }
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
@@ -120,7 +122,7 @@ namespace CsvConverter
 
             // アセットを生成する.
             AssetsGenerator assetsGenerator = new AssetsGenerator(s, fields, contents);
-            
+
             // カスタムアセットタイプを設定する
             // これはプロジェクト固有のアセットをテーブルでセット出来るようにする.
             {
@@ -136,6 +138,7 @@ namespace CsvConverter
                         return;
                     }
                 }
+
                 assetsGenerator.SetCustomAssetTypes(customAssetTypes);
             }
 
@@ -185,20 +188,41 @@ namespace CsvConverter
                 assetsGenerator.Setup(assetType, settingPath);
             }
 
-            bool success = assetsGenerator.CreateCsvAssets();
-
-            if (success)
+            // アセットを作成する.
+            for (int i = 0; i < assetsGenerator.contentRowCount; i++)
             {
-                Debug.LogFormat("生成された総行数: {0}", assetsGenerator.createdRowCount);
+                int line = i + 2 + 1;
+                ResultType resultType = assetsGenerator.CreateCsvAssetAt(i);
 
-                if (assetsGenerator.createdObject != null)
+                if ((resultType & ResultType.SkipNoKey) != 0)
                 {
-                    EditorGUIUtility.PingObject(assetsGenerator.createdObject.GetInstanceID());
+                    Debug.LogWarningFormat("{0} line {1}: key が存在しない行をスキップしました", s.className, line);
+                }
+
+                int total = assetsGenerator.contentRowCount;
+                if (total <= 10 || i == total - 1 || i % (total / 10) == 0)
+                {
+                    float progress = (float) i / total;
+                    EditorUtility.DisplayProgressBar("Progress", $"Creating {s.className} ({i + 1}/{total})", progress);
                 }
             }
-            else
+
+            // 結果を出力して保存する.
+            var result = assetsGenerator.result;
+            if (s.tableGenerate)
             {
-                Debug.LogError("Fails to create asset");
+                EditorUtility.SetDirty(result.tableInstance);
+                Debug.Log($"Create \"{Path.Combine(assetsGenerator.dstFolder, s.tableAssetName)}.asset\"");
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log($"生成された総行数: {result.createdRowCount}");
+
+            if (result.tableInstance != null)
+            {
+                EditorGUIUtility.PingObject(result.tableInstance.GetInstanceID());
             }
 
             EditorUtility.ClearProgressBar();
