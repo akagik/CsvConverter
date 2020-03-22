@@ -97,12 +97,16 @@ namespace CsvConverter
                 settings =
                     EditorGUILayout.ObjectField("Settings", settings, typeof(CsvConverterSettings), false) as
                         CsvConverterSettings;
-                setting = settings.list;
 
-                string settingPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(settings));
-                paths = Enumerable.Repeat(settingPath, setting.Length).ToArray();
+                if (settings != null)
+                {
+                    setting = settings.list;
 
-                parentSettings = Enumerable.Repeat(settings, settings.list.Length).ToArray();
+                    string settingPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(settings));
+                    paths = Enumerable.Repeat(settingPath, setting.Length).ToArray();
+
+                    parentSettings = Enumerable.Repeat(settings, settings.list.Length).ToArray();
+                }
             }
 
             // 検索ボックスを表示
@@ -111,10 +115,10 @@ namespace CsvConverter
             searchTxt = searchTxt.ToLower();
             GUILayout.EndHorizontal();
 
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition);
-
             if (settings != null && setting != null)
             {
+                scrollPosition = GUILayout.BeginScrollView(scrollPosition);
+
                 // セットされている settings 情報を EditorUserSettings に保存する.
                 {
                     string guid;
