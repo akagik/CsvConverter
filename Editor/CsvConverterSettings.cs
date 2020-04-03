@@ -113,6 +113,19 @@ namespace CsvConverter
                 }
             }
 
+
+            public bool useGSPlugin;
+
+#if ODIN_INSPECTOR
+            [Sirenix.OdinInspector.ShowIf("useGSPlugin")]
+#endif
+            public string sheetID;
+
+#if ODIN_INSPECTOR
+            [Sirenix.OdinInspector.ShowIf("useGSPlugin")]
+#endif
+            public string gid;
+
             // code を生成できるか？
             public bool canGenerateCode
             {
