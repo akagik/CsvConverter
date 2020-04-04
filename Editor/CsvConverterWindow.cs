@@ -185,6 +185,37 @@ namespace CsvConverter
                         }
                     }
 
+                    if (s.useGSPlugin) 
+                    {
+                        if(GUILayout.Button("DownLoad", GUILayout.Width(110))) 
+                        {
+                            GSPlugin.GSPluginSettings.Sheet sheet = new GSPlugin.GSPluginSettings.Sheet();
+                            sheet.sheetId = s.sheetID;
+                            sheet.gid = s.gid;
+
+                            string absolutePath = CCLogic.GetFilePathRelativesToAssets(path, s.csvFilePath);
+                            string downloadFolder = Path.GetDirectoryName(absolutePath);
+                            
+                            // 先頭の Assets を削除する
+                            if (downloadFolder.StartsWith("Assets/"))
+                            {
+                                sheet.downloadFolder = downloadFolder.Substring(7);
+                            }
+                            else if (downloadFolder.Equals("Assets"))
+                            {
+                                sheet.downloadFolder = "";
+                            }
+                            else
+                            {
+                                Debug.LogError("unexpected downloadFolder: " + downloadFolder);
+                            }
+                            sheet.fileName = Path.GetFileNameWithoutExtension(absolutePath);
+                            sheet.isCsv = true;
+                            
+                            GSPlugin.GSEditorWindow.DownloadOne(sheet);
+                        }
+                    }
+
                     GUI.enabled = s.canGenerateCode;
                     if (GUILayout.Button("Generate Code", GUILayout.Width(110)) && !isDownloading)
                     {

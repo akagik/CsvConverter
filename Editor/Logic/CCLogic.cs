@@ -44,7 +44,7 @@ namespace CsvConverter
         {
             if (destination.StartsWith("/"))
             {
-                return destination.Substring(1);
+                return "Assets/" + destination.Substring(1);
             }
 
             // ".." などを解決するために一度 FullPath を取得したのち、Assets より前を削除する.
