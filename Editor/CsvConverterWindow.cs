@@ -185,33 +185,33 @@ namespace CsvConverter
                         }
                     }
 
-                    if (setting[i].useGSPlugin) 
+                    if (s.useGSPlugin) 
                     {
                         if(GUILayout.Button("DownLoad", GUILayout.Width(110))) 
                         {
                             GSPlugin.GSPluginSettings.Sheet sheet = new GSPlugin.GSPluginSettings.Sheet();
-                            sheet.sheetId = setting[i].sheetID;
-                            sheet.gid = setting[i].gid;
+                            sheet.sheetId = s.sheetID;
+                            sheet.gid = s.gid;
 
-                            string settingPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(settings));
-                            string absolutePath = CCLogic.GetFilePathRelativesToAssets(settingPath, setting[i].csvFilePath);
-
-                            int index = 0;
-                            string filename = absolutePath;
-                            Debug.Log(absolutePath);
-                            while (index != -1) 
-                            {
-                                index = filename.IndexOf("/");
-                                filename = filename.Substring(index + 1);
-                            }
+                            string absolutePath = CCLogic.GetFilePathRelativesToAssets(path, s.csvFilePath);
+                            string downloadFolder = Path.GetDirectoryName(absolutePath);
                             
-                            string downloadFolder = absolutePath.Replace(filename, "");
-                            downloadFolder = "." + downloadFolder.Replace("Assets", "");
-                            sheet.downloadFolder = downloadFolder;
-                            Debug.Log(sheet.downloadFolder);
-                            sheet.fileName = filename.Replace(".csv", "");
-
+                            // 先頭の Assets を削除する
+                            if (downloadFolder.StartsWith("Assets/"))
+                            {
+                                sheet.downloadFolder = downloadFolder.Substring(7);
+                            }
+                            else if (downloadFolder.Equals("Assets"))
+                            {
+                                sheet.downloadFolder = "";
+                            }
+                            else
+                            {
+                                Debug.LogError("unexpected downloadFolder: " + downloadFolder);
+                            }
+                            sheet.fileName = Path.GetFileNameWithoutExtension(absolutePath);
                             sheet.isCsv = true;
+                            
                             GSPlugin.GSEditorWindow.DownloadOne(sheet);
                         }
                     }
