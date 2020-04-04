@@ -10,7 +10,6 @@ namespace CsvConverter
 {
     public class CsvConverterWindow : EditorWindow
     {
-        public CsvConverterSettings settings;
         private bool isDownloading;
         private Vector2 scrollPosition;
 
@@ -24,7 +23,6 @@ namespace CsvConverter
         private string searchTxt = "";
 
         // チェックボックス用
-        private bool isAll = true;
         CsvConverterSettings.Setting[] cachedAllSettings;
         private string[] cachedAllSettingsPath;
         private CsvConverterSettings[] cachedAllParentSettings;
@@ -33,22 +31,6 @@ namespace CsvConverter
         static public void OpenWindow()
         {
             EditorWindow.GetWindow<CsvConverterWindow>(false, "CsvConverter", true).Show();
-        }
-
-        void OnEnable()
-        {
-            string guid = EditorUserSettings.GetConfigValue(CCLogic.SETTINGS_KEY);
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-
-            if (path != "")
-            {
-                // Debug.Log("Found prefs settings GUID: " + EditorPrefs.GetString(SETTINGS_KEY));
-                settings = AssetDatabase.LoadAssetAtPath<CsvConverterSettings>(path);
-            }
-            else
-            {
-                // Debug.Log("Not Found GUID");
-            }
         }
 
         void OnFocus()
@@ -78,35 +60,15 @@ namespace CsvConverter
         private void OnGUI()
         {
             GUILayout.Space(6f);
-            isAll = EditorGUILayout.Toggle("AllSettings", isAll);
             CsvConverterSettings.Setting[] setting = null;
             CsvConverterSettings[] parentSettings = null;
             string[] paths = null;
 
-            if (isAll)
+            if (cachedAllSettings != null)
             {
-                if (cachedAllSettings != null)
-                {
-                    setting = cachedAllSettings;
-                    paths = cachedAllSettingsPath;
-                    parentSettings = cachedAllParentSettings;
-                }
-            }
-            else
-            {
-                settings =
-                    EditorGUILayout.ObjectField("Settings", settings, typeof(CsvConverterSettings), false) as
-                        CsvConverterSettings;
-
-                if (settings != null)
-                {
-                    setting = settings.list;
-
-                    string settingPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(settings));
-                    paths = Enumerable.Repeat(settingPath, setting.Length).ToArray();
-
-                    parentSettings = Enumerable.Repeat(settings, settings.list.Length).ToArray();
-                }
+                setting = cachedAllSettings;
+                paths = cachedAllSettingsPath;
+                parentSettings = cachedAllParentSettings;
             }
 
             // 検索ボックスを表示
@@ -115,26 +77,9 @@ namespace CsvConverter
             searchTxt = searchTxt.ToLower();
             GUILayout.EndHorizontal();
 
-            if (settings != null && setting != null)
+            if (setting != null)
             {
                 scrollPosition = GUILayout.BeginScrollView(scrollPosition);
-
-                // セットされている settings 情報を EditorUserSettings に保存する.
-                {
-                    string guid;
-                    long localId;
-
-                    if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(settings, out guid, out localId))
-                    {
-                        if (savedGUID != guid)
-                        {
-                            // Debug.Log("Save GUID(" + guid + ") at " + SETTINGS_KEY);
-                            EditorPrefs.SetString(CCLogic.SETTINGS_KEY, guid);
-                            EditorUserSettings.SetConfigValue(CCLogic.SETTINGS_KEY, guid);
-                            savedGUID = guid;
-                        }
-                    }
-                }
 
                 for (int i = 0; i < setting.Length; i++)
                 {
