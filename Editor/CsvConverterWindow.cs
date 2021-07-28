@@ -142,7 +142,7 @@ namespace CsvConverter
                             string downloadFolder = Path.GetDirectoryName(absolutePath);
                             
                             // 先頭の Assets を削除する
-                            if (downloadFolder.StartsWith("Assets/"))
+                            if (downloadFolder.StartsWith("Assets/") || downloadFolder.StartsWith("Assets\\"))
                             {
                                 sheet.downloadFolder = downloadFolder.Substring(7);
                             }
